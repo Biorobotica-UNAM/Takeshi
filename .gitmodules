@@ -1,0 +1,12 @@
+[submodule "src/Interfaces"]
+	path = src/Interfaces
+	url = git@github.com:Biorobotica-UNAM/Interfaces.git
+[submodule "src/Navigation/navigation_tools"]
+	path = src/Navigation/navigation_tools
+	url = git@github.com:Biorobotica-UNAM/navigation_tools.git
+[submodule "src/Navigation/src/Navigation/navigation_controller"]
+	path = src/Navigation/src/Navigation/navigation_controller
+	url = git@github.com:Biorobotica-UNAM/navigation_controller.git
+[submodule "src/Navigation/src/Navigation/navigation_planner"]
+	path = src/Navigation/src/Navigation/navigation_planner
+	url = git@github.com:Biorobotica-UNAM/navigation_planner.git
