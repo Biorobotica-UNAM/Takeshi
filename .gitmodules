@@ -1,12 +1,20 @@
 [submodule "src/Interfaces"]
 	path = src/Interfaces
 	url = git@github.com:Biorobotica-UNAM/Interfaces.git
+	branch = main
 [submodule "src/Navigation/navigation_tools"]
 	path = src/Navigation/navigation_tools
 	url = git@github.com:Biorobotica-UNAM/navigation_tools.git
+	branch = main
 [submodule "src/Navigation/navigation_controller"]
 	path = src/Navigation/navigation_controller
 	url = git@github.com:Biorobotica-UNAM/navigation_controller.git
+	branch = main
 [submodule "src/Navigation/navigation_planner"]
 	path = src/Navigation/navigation_planner
 	url = git@github.com:Biorobotica-UNAM/navigation_planner.git
+	branch = main
+[submodule "src/Supervisor/surge_et_ambula"]
+	path = src/Supervisor/surge_et_ambula
+	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
+	branch = main
