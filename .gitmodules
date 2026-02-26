@@ -80,10 +80,20 @@
 	path = src/Executor/executor_tools
 	url = git@github.com:Biorobotica-UNAM/executor_tools.git
 	branch = main
+[submodule "src/Executor/executor_worker"]
+	path = src/Executor/executor_worker
+	url = git@github.com:Biorobotica-UNAM/executor_worker.git
+	branch = dev/worker
+[submodule "src/Executor/executor_manager"]
+	path = src/Executor/executor_manager
+	url = git@github.com:Biorobotica-UNAM/executor_manager.git
+	branch = dev/manager
 [submodule "src/Supervisor/surge_et_ambula"]
 	path = src/Supervisor/surge_et_ambula
 	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
 	branch = main
+
+####    Supervisor    ####
 [submodule "src/Supervisor/supervisor_manager"]
 	path = src/Supervisor/supervisor_manager
 	url = git@github.com:Biorobotica-UNAM/supervisor_manager.git
