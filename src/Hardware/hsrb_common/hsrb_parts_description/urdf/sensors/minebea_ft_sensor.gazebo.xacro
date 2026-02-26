@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<robot name="hsrb" xmlns:xacro="http://ros.org/wiki/xacro">
+    <xacro:macro name="minebea_ft_sensor_gazebo" params="robot_namespace joint_name ros_topic">
+        <gazebo reference="${joint_name}">
+            <provideFeedback>true</provideFeedback>
+        </gazebo>
+        <gazebo>
+            <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+                <update_rate>30.0</update_rate>
+                <joint_name>${joint_name}</joint_name>
+                <robotNamespace>${robot_namespace}</robotNamespace>
+                <ros>
+                    <namespace>${robot_namespace}</namespace>
+                    <remapping>wrench:=${ros_topic}</remapping>
+                </ros>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="minebea_ft_sensor_gazebo_ignition" params="robot_namespace joint_name ros_topic">
+        <gazebo reference="${joint_name}">
+            <sensor type="force_torque" name="${joint_name}_force_torque_sensor">
+                <update_rate>30.0</update_rate>
+                <topic>${robot_namespace}/${ros_topic}</topic>
+                <gz_frame_id>${personal_name}/wrist_ft_sensor_frame</gz_frame_id>
+                <force_torque>
+                    <frame>sensor</frame>
+                    <measure_direction>parent_to_child</measure_direction>
+                </force_torque>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+</robot>
