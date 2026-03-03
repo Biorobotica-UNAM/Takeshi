@@ -42,7 +42,7 @@ public:
   HsrTalkNode()
   : Node("hsr_talk_node")
   {
-    this->declare_parameter<std::string>("service_name", "talker/speech");
+    this->declare_parameter<std::string>("service_name", "/hri/talker/talk");
     this->declare_parameter<std::string>("topic_name", "/talk_request");
 
     const auto service_name = this->get_parameter("service_name").as_string();
