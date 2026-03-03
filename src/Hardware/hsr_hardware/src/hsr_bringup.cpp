@@ -10,10 +10,8 @@ int main(int argc, char * argv[])
   auto client =
     node->create_client<std_srvs::srv::Empty>("/stop_sending_localized_pose");
 
-  if (!client->wait_for_service(std::chrono::seconds(5))) {
+  while(!client->wait_for_service(std::chrono::seconds(5))) {
     RCLCPP_ERROR(node->get_logger(), "Service not available.");
-    rclcpp::shutdown();
-    return 1;
   }
 
   auto request = std::make_shared<std_srvs::srv::Empty::Request>();

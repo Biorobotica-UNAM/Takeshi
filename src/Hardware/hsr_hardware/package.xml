@@ -18,6 +18,9 @@
   <depend>trajectory_msgs</depend>
   <depend>actionlib_msgs</depend>
   <depend>tmc_control_msgs</depend>
+  <depend>tmc_voice_msgs</depend>
+  <depend>talker_interfaces</depend>
+  <depend>geometry_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
