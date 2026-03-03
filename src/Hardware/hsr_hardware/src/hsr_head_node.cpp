@@ -24,9 +24,9 @@ public:
     this->declare_parameter<bool>(        "use_namespace",            false);
     this->declare_parameter<std::string>( "head_cmd_topic_",          "/head_trajectory_controller/joint_trajectory");
     this->declare_parameter<std::string>( "head_state_topic",         "/head_trajectory_controller/controller_state");
-    this->declare_parameter<std::string>( "head_goal_topic",          "/hardware/head/goal_pose");
-    this->declare_parameter<std::string>( "head_current_topic",       "/hardware/head/current_pose");
-    this->declare_parameter<std::string>( "head_goal_reached_topic",  "/hardware/head/goal_reached");
+    this->declare_parameter<std::string>( "head_goal_topic",          "head/goal_pose");
+    this->declare_parameter<std::string>( "head_current_topic",       "head/current_pose");
+    this->declare_parameter<std::string>( "head_goal_reached_topic",  "head/goal_reached");
     this->declare_parameter<double>("pan_min", -3.14);
     this->declare_parameter<double>("pan_max", 1.74);
     this->declare_parameter<double>("tilt_min", -0.9);

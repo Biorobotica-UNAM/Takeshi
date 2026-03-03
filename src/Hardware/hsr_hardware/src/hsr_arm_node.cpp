@@ -4,6 +4,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/executors/multi_threaded_executor.hpp>
 
+#include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -15,6 +16,7 @@
 
 #include <string>
 #include <cmath>
+
 
 class ArmController : public rclcpp::Node
 {
@@ -44,29 +46,29 @@ public:
 
     // Publishers
     pub_torso_current_pose_ = this->create_publisher<std_msgs::msg::Float32>(
-          make_name("/hardware/torso/current_pose"), 
+          make_name("torso/current_pose"), 
           rclcpp::QoS(10).reliable());
     pub_arm_current_pose_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-          make_name("/hardware/arm/current_pose"), 
+          make_name("arm/current_pose"), 
           rclcpp::QoS(10).reliable());
     pub_arm_goal_pose_ = this->create_publisher<trajectory_msgs::msg::JointTrajectory>(
       arm_cmd_topic_, 
       rclcpp::QoS(10).reliable());
     pub_arm_goal_reached_ = this->create_publisher<std_msgs::msg::Bool>(
-      make_name("/hardware/arm/goal_reached"), 
+      make_name("arm/goal_reached"), 
       rclcpp::QoS(10).reliable());
     pub_torso_goal_reached_ = this->create_publisher<std_msgs::msg::Bool>(
-      make_name("/hardware/torso/goal_reached"), 
+      make_name("torso/goal_reached"), 
       rclcpp::QoS(10).reliable());
 
     // Subscribers
     sub_arm_goal_pose_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
-        make_name("/hardware/arm/goal_pose"), 
+        make_name("arm/goal_pose"), 
         rclcpp::QoS(10).reliable(),
         std::bind(&ArmController::armGoalPoseCallback, this, std::placeholders::_1));
 
     sub_torso_goal_pose_ = this->create_subscription<std_msgs::msg::Float32>(
-        make_name("/hardware/torso/goal_pose"), 
+        make_name("torso/goal_pose"), 
         rclcpp::QoS(10).reliable(),
         std::bind(&ArmController::torsoGoalPoseCallback, this, std::placeholders::_1));
 
@@ -104,7 +106,6 @@ private:
   rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr   sub_arm_goal_pose_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr             sub_torso_goal_pose_;
   rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr sub_arm_state_;
-
   double max_joint_vel_ = 1.2f;
   double max_joint_accel_ = 2.0f;
 
@@ -257,7 +258,6 @@ private:
     arm_goal_pose_[2] = static_cast<float>(arm_default_pose_[2]);
     arm_goal_pose_[3] = static_cast<float>(arm_default_pose_[3]);
 
-    sendArmGoalTrajectory();
 
     RCLCPP_INFO(this->get_logger(),
       "arm_node.->Publish Default Arm Joints: torso=%.3f arm=[%.3f %.3f %.3f %.3f]",
