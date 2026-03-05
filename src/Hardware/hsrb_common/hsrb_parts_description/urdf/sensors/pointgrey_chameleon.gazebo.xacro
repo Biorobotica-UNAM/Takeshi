@@ -1,0 +1,77 @@
+<?xml version="1.0" ?>
+<robot name="hsrb" xmlns:xacro="http://ros.org/wiki/xacro">
+    <xacro:macro name="pointgrey_chameleon_gazebo" params="sensor_name parent_frame topic_frame_id robot_namespace baseline">
+        <gazebo reference="${parent_frame}">
+            <sensor type="camera" name="${sensor_name}">
+                <update_rate>4.0</update_rate>
+                <camera name="${sensor_name}">
+                    <horizontal_fov>1.16762527</horizontal_fov>
+                    <image>
+                        <width>1280</width>
+                        <height>960</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.05</near>
+                        <far>100</far>
+                    </clip>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.007</stddev>
+                    </noise>
+                    <distortion>
+                        <k1>0.0</k1>
+                        <k2>0.0</k2>
+                        <k3>0.0</k3>
+                        <p1>0.0</p1>
+                        <p2>0.0</p2>
+                    </distortion>
+                </camera>
+                <plugin name="${sensor_name}_camera_controller" filename="libgazebo_ros_camera.so">
+                    <camera_name>${sensor_name}</camera_name>
+                    <frame_name>${topic_frame_id}</frame_name>
+                    <hack_baseline>${baseline}</hack_baseline>
+                    <ros>
+                        <namespace>${robot_namespace}</namespace>
+                        <remapping>${sensor_name}/image_raw:=${sensor_name}/image_rect_color</remapping>
+                    </ros>
+                </plugin>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="pointgrey_chameleon_gazebo_ignition" params="sensor_name parent_frame topic_frame_id robot_namespace baseline">
+        <gazebo reference="${parent_frame}">
+            <sensor type="camera" name="${sensor_name}">
+                <update_rate>4.0</update_rate>
+                <camera name="${sensor_name}">
+                    <horizontal_fov>1.16762527</horizontal_fov>
+                    <image>
+                        <width>1280</width>
+                        <height>960</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.05</near>
+                        <far>100</far>
+                    </clip>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.007</stddev>
+                    </noise>
+                    <distortion>
+                        <k1>0.0</k1>
+                        <k2>0.0</k2>
+                        <k3>0.0</k3>
+                        <p1>0.0</p1>
+                        <p2>0.0</p2>
+                    </distortion>
+                </camera>
+                <gz_frame_id>${topic_frame_id}</gz_frame_id>
+                <topic>${robot_namespace}/${sensor_name}/image_rect_color</topic>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+</robot>

@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="ground_truth_xyz_offset" default="0.0 0.0 0.0"/>
+  <xacro:arg name="ground_truth_rpy_offset" default="0.0 0.0 0.0"/>
+
+  <xacro:macro name="ros2_contorl_gazebo">
+    <gazebo>
+      <self_collide>1</self_collide>
+    </gazebo>
+
+    <gazebo>
+      <plugin name="gz_ros2_control::GazeboSimROS2ControlPlugin" filename="gz_ros2_control-system">
+        <parameters>$(find hsrb_gazebo_bringup)/config/gazebo_ros2_control.yaml</parameters>
+        <robot_param_node>/whole_body/robot_state_publisher</robot_param_node>
+      </plugin>
+      <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
+      <plugin filename="tmc_gz_plugins-odometry-publisher-system" name="tmc_gz_plugins::OdometryPublisher">
+        <xyz_offset>$(arg ground_truth_xyz_offset)</xyz_offset>
+        <rpy_offset>$(arg ground_truth_rpy_offset)</rpy_offset>
+      </plugin>
+    </gazebo>
+
+    <ros2_control name="GazeboSimSystem" type="system">
+      <hardware>
+        <plugin>hsrb_gz_ros2_control/IgnitionSystem</plugin>
+      </hardware>
+      <xacro:macro name="gazebo_velocity_joint" params="name">
+        <joint name="${name}">
+          <command_interface name="velocity"/>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+          <state_interface name="effort"/>
+        </joint>
+      </xacro:macro>
+      <xacro:macro name="gazebo_position_joint" params="name initial_position:=0.0 do_saturate:=false">
+        <joint name="${name}">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">${initial_position}</param>
+          </state_interface>
+          <state_interface name="velocity"/>
+          <state_interface name="effort"/>
+          <param name="do_saturate">${do_saturate}</param>
+        </joint>
+      </xacro:macro>
+      <xacro:macro name="gazebo_spring_joint" params="name">
+        <joint name="${name}">
+          <command_interface name="position"/>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+          <state_interface name="effort"/>
+        </joint>
+      </xacro:macro>
+      <xacro:macro name="gazebo_mimic_joint" params="name mimic multiplier:=1.0 offset:=0.0 do_saturate:=false">
+        <joint name="${name}">
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+          <state_interface name="effort"/>
+          <param name="mimic">${mimic}</param>
+          <param name="multiplier">${multiplier}</param>
+          <param name="offset">${offset}</param>
+          <param name="do_saturate">${do_saturate}</param>
+        </joint>
+      </xacro:macro>
+
+      <xacro:gazebo_position_joint name="head_tilt_joint" do_saturate="true"/>
+      <xacro:gazebo_position_joint name="head_pan_joint"/>
+      <xacro:gazebo_position_joint name="arm_lift_joint" do_saturate="true"/>
+      <xacro:gazebo_mimic_joint name="torso_lift_joint" mimic="arm_lift_joint" multiplier="0.5" offset="0.0" do_saturate="true"/>
+      <xacro:gazebo_position_joint name="arm_flex_joint" do_saturate="true"/>
+      <xacro:gazebo_position_joint name="arm_roll_joint" do_saturate="true"/>
+      <xacro:gazebo_position_joint name="wrist_flex_joint"/>
+      <xacro:gazebo_position_joint name="wrist_roll_joint" do_saturate="true"/>
+      <xacro:gazebo_velocity_joint name="base_roll_joint"/>
+      <xacro:gazebo_velocity_joint name="base_r_drive_wheel_joint"/>
+      <xacro:gazebo_velocity_joint name="base_l_drive_wheel_joint"/>
+
+      <joint name="hand_motor_joint">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="grasp_velocity_gain">100</param>
+        <param name="grasp_effort_tolerance">0.01</param>
+      </joint>
+      <xacro:gazebo_spring_joint name="hand_l_spring_proximal_joint"/>
+      <xacro:gazebo_spring_joint name="hand_r_spring_proximal_joint"/>
+      <xacro:gazebo_mimic_joint name="hand_l_proximal_joint" mimic="hand_motor_joint" multiplier="1" offset="0.0"/>
+      <xacro:gazebo_mimic_joint name="hand_r_proximal_joint" mimic="hand_motor_joint" multiplier="1" offset="0.0"/>
+      <xacro:gazebo_mimic_joint name="hand_l_mimic_distal_joint" mimic="hand_l_spring_proximal_joint" multiplier="-1" offset="0.0"/>
+      <xacro:gazebo_mimic_joint name="hand_r_mimic_distal_joint" mimic="hand_r_spring_proximal_joint" multiplier="-1" offset="0.0"/>
+      <xacro:gazebo_mimic_joint name="hand_l_distal_joint" mimic="hand_motor_joint" multiplier="-1" offset="-0.087"/>
+      <xacro:gazebo_mimic_joint name="hand_r_distal_joint" mimic="hand_motor_joint" multiplier="-1" offset="-0.087"/>
+    </ros2_control>
+  </xacro:macro>
+</robot>
