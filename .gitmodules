@@ -32,7 +32,7 @@
 [submodule "src/Navigation/navigation_planner"]
 	path = src/Navigation/navigation_planner
 	url = git@github.com:Biorobotica-UNAM/navigation_planner.git
-	branch = dev
+	branch = main
 
 ####    Manipulation    ####
 [submodule "src/Manipulation/manipulation_tools"]
@@ -75,11 +75,11 @@
 [submodule "src/Planning/planning_tools"]
 	path = src/Planning/planning_tools
 	url = git@github.com:Biorobotica-UNAM/planning_tools.git
-	branch = 19-Feb
+	branch = main
 [submodule "src/Planning/clips"]
 	path = src/Planning/clips
 	url = git@github.com:Biorobotica-UNAM/clips.git
-	branch = 19-Feb
+	branch = main
 [submodule "src/Planning/semantic_parser"]
 	path = src/Planning/semantic_parser
 	url = git@github.com:Biorobotica-UNAM/semantic_parser.git
@@ -89,29 +89,29 @@
 [submodule "src/Executor/executor_tools"]
 	path = src/Executor/executor_tools
 	url = git@github.com:Biorobotica-UNAM/executor_tools.git
-	branch = dev/executor
+	branch = main
 [submodule "src/Executor/executor_worker"]
 	path = src/Executor/executor_worker
 	url = git@github.com:Biorobotica-UNAM/executor_worker.git
-	branch = dev/worker
+	branch = main
 [submodule "src/Executor/executor_manager"]
 	path = src/Executor/executor_manager
 	url = git@github.com:Biorobotica-UNAM/executor_manager.git
-	branch = dev/manager
+	branch = main
 [submodule "src/Supervisor/surge_et_ambula"]
 	path = src/Supervisor/surge_et_ambula
 	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
-	branch = dev/takeshi
+	branch = main
 
 ####    Supervisor    ####
 [submodule "src/Supervisor/supervisor_manager"]
 	path = src/Supervisor/supervisor_manager
 	url = git@github.com:Biorobotica-UNAM/supervisor_manager.git
-	branch = dev/supervisor_manager
+	branch = main
 [submodule "src/Supervisor/supervisor_plan"]
 	path = src/Supervisor/supervisor_plan
 	url = git@github.com:Biorobotica-UNAM/supervisor_plan.git
-	branch = dev/supervisor_plan
+	branch = main
 [submodule "src/Supervisor/supervisor_system"]
 	path = src/Supervisor/supervisor_system
 	url = git@github.com:Biorobotica-UNAM/supervisor_system.git
@@ -119,3 +119,4 @@
 [submodule "src/Supervisor/supervisor_execution"]
 	path = src/Supervisor/supervisor_execution
 	url = git@github.com:Biorobotica-UNAM/supervisor_execution.git
+	branch = main
