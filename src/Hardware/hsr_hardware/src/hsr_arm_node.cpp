@@ -5,8 +5,8 @@
 #include <rclcpp/executors/multi_threaded_executor.hpp>
 
 #include <std_msgs/msg/int32.hpp>
-#include <std_msgs/msg/float32.hpp>
-#include <std_msgs/msg/float32_multi_array.hpp>
+#include <std_msgs/msg/float64.hpp>
+#include <std_msgs/msg/float64_multi_array.hpp>
 #include <std_msgs/msg/bool.hpp>
 
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
@@ -45,10 +45,10 @@ public:
       std::bind(&ArmController::on_parameter_change, this, std::placeholders::_1));
 
     // Publishers
-    pub_torso_current_pose_ = this->create_publisher<std_msgs::msg::Float32>(
+    pub_torso_current_pose_ = this->create_publisher<std_msgs::msg::Float64>(
           make_name("torso/current_pose"), 
           rclcpp::QoS(10).reliable());
-    pub_arm_current_pose_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
+    pub_arm_current_pose_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
           make_name("arm/current_pose"), 
           rclcpp::QoS(10).reliable());
     pub_arm_goal_pose_ = this->create_publisher<trajectory_msgs::msg::JointTrajectory>(
@@ -62,12 +62,12 @@ public:
       rclcpp::QoS(10).reliable());
 
     // Subscribers
-    sub_arm_goal_pose_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+    sub_arm_goal_pose_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
         make_name("arm/goal_pose"), 
         rclcpp::QoS(10).reliable(),
         std::bind(&ArmController::armGoalPoseCallback, this, std::placeholders::_1));
 
-    sub_torso_goal_pose_ = this->create_subscription<std_msgs::msg::Float32>(
+    sub_torso_goal_pose_ = this->create_subscription<std_msgs::msg::Float64>(
         make_name("torso/goal_pose"), 
         rclcpp::QoS(10).reliable(),
         std::bind(&ArmController::torsoGoalPoseCallback, this, std::placeholders::_1));
@@ -97,14 +97,14 @@ private:
   std::string arm_cmd_topic_;
   std::string arm_state_topic_;
 
-  rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr                pub_torso_current_pose_;
-  rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr      pub_arm_current_pose_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr                pub_torso_current_pose_;
+  rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr      pub_arm_current_pose_;
   rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr pub_arm_goal_pose_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr                   pub_arm_goal_reached_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr                   pub_torso_goal_reached_;
 
-  rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr   sub_arm_goal_pose_;
-  rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr             sub_torso_goal_pose_;
+  rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr   sub_arm_goal_pose_;
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr             sub_torso_goal_pose_;
   rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr sub_arm_state_;
   double max_joint_vel_ = 1.2f;
   double max_joint_accel_ = 2.0f;
@@ -189,10 +189,11 @@ private:
     arm_current_pose_[3] = static_cast<float>(msg->feedback.positions[4]); // wrist_roll_joint
   
     // Publish current
-    std_msgs::msg::Float32 torso_msg; torso_msg.data = torso_current_pose_;
+    std_msgs::msg::Float64 torso_msg; torso_msg.data = torso_current_pose_;
     pub_torso_current_pose_->publish(torso_msg);
   
-    std_msgs::msg::Float32MultiArray arm_msg; arm_msg.data = arm_current_pose_;
+    std_msgs::msg::Float64MultiArray arm_msg; 
+    arm_msg.data.assign(arm_current_pose_.begin(), arm_current_pose_.end());
     pub_arm_current_pose_->publish(arm_msg);
 
     if (!init_sent_once_) {
@@ -203,7 +204,7 @@ private:
     }
   }
 
-  void armGoalPoseCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+  void armGoalPoseCallback(const std_msgs::msg::Float64MultiArray::SharedPtr msg)
   {
     if (msg->data.size() != 4) {
       RCLCPP_ERROR(this->get_logger(), "arm_node.->Arm data must be 4 values (got %zu)",
@@ -219,7 +220,7 @@ private:
     sendArmGoalTrajectory();
   }
 
-  void torsoGoalPoseCallback(const std_msgs::msg::Float32::SharedPtr msg)
+  void torsoGoalPoseCallback(const std_msgs::msg::Float64::SharedPtr msg)
   {
     torso_goal_pose_ = msg->data;
     msg_torso_received_ = true;

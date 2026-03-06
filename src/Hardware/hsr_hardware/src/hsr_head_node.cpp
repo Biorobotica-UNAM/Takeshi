@@ -3,7 +3,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/executors/multi_threaded_executor.hpp>
 
-#include <std_msgs/msg/float32_multi_array.hpp>
+#include <std_msgs/msg/float64_multi_array.hpp>
 #include <std_msgs/msg/bool.hpp>
 
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
@@ -53,7 +53,7 @@ public:
     pub_head_goal_traj_ = this->create_publisher<trajectory_msgs::msg::JointTrajectory>(
       head_cmd_topic_, 
       rclcpp::QoS(10).reliable());
-    pub_head_current_pose_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
+    pub_head_current_pose_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
       head_current_topic_, 
       rclcpp::QoS(10).reliable());
     pub_head_goal_reached_ = this->create_publisher<std_msgs::msg::Bool>(
@@ -61,7 +61,7 @@ public:
       rclcpp::QoS(10).reliable());
 
     // Subscribers
-    sub_head_goal_pose_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+    sub_head_goal_pose_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
       head_goal_topic_, rclcpp::QoS(10).reliable(),
       std::bind(&HeadController::headGoalPoseCallback, this, std::placeholders::_1));
 
@@ -96,10 +96,10 @@ private:
   double max_vel_ = 1.2f;
 
   rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr  pub_head_goal_traj_;
-  rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr       pub_head_current_pose_;
+  rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr       pub_head_current_pose_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr                    pub_head_goal_reached_;
 
-  rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr    sub_head_goal_pose_;
+  rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr    sub_head_goal_pose_;
   rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr sub_head_state_;
 
   std::vector<float> head_goal_pose_;
@@ -174,8 +174,8 @@ private:
       head_current_pose_[0] = static_cast<float>(msg->actual.positions[0]); // pan
       head_current_pose_[1] = static_cast<float>(msg->actual.positions[1]); // tilt
 
-      std_msgs::msg::Float32MultiArray arr;
-      arr.data = head_current_pose_;
+      std_msgs::msg::Float64MultiArray arr;
+      arr.data = std::vector<double>(head_current_pose_.begin(), head_current_pose_.end());
       pub_head_current_pose_->publish(arr);
     }
 
@@ -187,7 +187,7 @@ private:
 
   }
 
-  void headGoalPoseCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+  void headGoalPoseCallback(const std_msgs::msg::Float64MultiArray::SharedPtr msg)
   {
     if (msg->data.size() != 2) {
       RCLCPP_ERROR(this->get_logger(),
@@ -233,8 +233,8 @@ private:
     float delta_pan  = std::fabs(head_current_pose_[0] - pan);
     float delta_tilt = std::fabs(head_current_pose_[1] - tilt);
 
-    float max_delta = std::max(delta_pan, delta_tilt);
-    double time_sec = std::max(0.1, max_delta/ max_vel_);
+    float min_delta = std::min(delta_pan, delta_tilt);
+    double time_sec = std::max(0.1, min_delta/ max_vel_);
     p.time_from_start = rclcpp::Duration::from_seconds(time_sec);
 
     traj.points.push_back(p);
