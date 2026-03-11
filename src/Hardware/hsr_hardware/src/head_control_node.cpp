@@ -1,7 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include <cmath>
 
-#include "std_srvs/srv/trigger.hpp"
 #include "std_msgs/msg/float64_multi_array.hpp"
 #include "std_msgs/msg/string.hpp"
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -19,11 +18,11 @@ public:
   {
 
     // Declare parameters
-    this->declare_parameter<std::string>( "head_goal_topic",          "head/goal_pose");
-    this->declare_parameter<std::string>( "head_current_topic",       "head/current_pose");
-    this->declare_parameter<std::string>( "head_goal_reached_topic",  "head/goal_reached");
+    this->declare_parameter<std::string>( "head_goal_topic",          "/hardware/head/goal_pose");
+    this->declare_parameter<std::string>( "head_current_pose_topic",  "/hardware/head/current_pose");
+    this->declare_parameter<std::string>( "head_goal_reached_topic",  "/hardware/head/goal_reached");
 
-    this->declare_parameter<std::string>("camera_frame",                "camera_link");
+    this->declare_parameter<std::string>("camera_frame",                "head_rgbd_sensor_rgb_frame");
     this->declare_parameter<std::string>("base_frame",                  "base_link");
 
     this->declare_parameter<double>("pan_min", -1.57);
@@ -94,7 +93,7 @@ private:
     float current_pan = 0.0;
     float current_tilt = 0.0;
     bool tracking_enabled_ = false;
-    float tracking_gain_ = 0.5;
+    float tracking_gain_ = 0.8;
 
     std::string target_frame_to_track_;
     rclcpp::TimerBase::SharedPtr tracking_timer_;
@@ -114,18 +113,6 @@ private:
         return {goalPan, goalTilt};
     }
 
-    /*
-    std::vector<float> xyzToPanTilt(float dx, float dy, float dz)
-    {
-        float pan = atan2(dy, dx);
-        float dist_xy = sqrt(dx * dx + dy * dy);
-        // dz depends on the robot's z axis orientation (+, -)
-        float tilt = atan2(dz, dist_xy);
-        return {pan, tilt};
-    }
-    */
-
-    // Funcion corregida (para testear)
     std::vector<float> xyzToPanTilt(float x, float y, float z){
         float pan_error = atan2(x, z);
 
@@ -134,18 +121,21 @@ private:
         return {pan_error, tilt_error};
     }
 
-    void pointHeadTo(float x, float y, float z, bool track_mode = false)
+    void pointHeadTo(float x, float y, float z, bool track_mode)
     {
         auto error = xyzToPanTilt(x,y,z);
 
-        if (!track_mode) tracking_gain_ = 1.0;
+        float gain = track_mode ? tracking_gain_ : 1.0f;
 
-        if (std::abs(error[0]) < dead_zone_threshold) error[0] = 0.0;
-        if (std::abs(error[1]) < dead_zone_threshold) error[1] = 0.0;
+        float apply_pan_err = (std::abs(error[0]) > dead_zone_threshold) ? error[0] : 0.0f;
+        float apply_tilt_err = (std::abs(error[1]) > dead_zone_threshold) ? error[1] : 0.0f;
 
-        float target_pan = current_pan + (error[0] * tracking_gain_);
-        float target_tilt = current_tilt + (error[1] * tracking_gain_);
+        float target_pan = current_pan - (apply_pan_err * gain);
+        float target_tilt = current_tilt + (apply_tilt_err * gain);
+
         auto limited = limitHeadPose(target_pan, target_tilt);
+
+        RCLCPP_INFO(this->get_logger(), "Pointing head to: pan=%.2f, tilt=%.2f. With gain: %.2f", limited[0], limited[1], gain);
 
         // Create and publish message
         std_msgs::msg::Float64MultiArray head_goal_msg;
@@ -182,7 +172,7 @@ private:
         current_pan = current[0];
         current_tilt = current[1];
     }
-
+/*
     void lookAtCallback(const geometry_msgs::msg::PointStamped::SharedPtr msg)
     {
         try {
@@ -193,10 +183,41 @@ private:
         // Compute pan and tilt angles
         pointHeadTo(p_in_camera_frame.point.x,
                 p_in_camera_frame.point.y,
-                p_in_camera_frame.point.z);
+                p_in_camera_frame.point.z, false);
 
         } catch (tf2::TransformException &ex) {
         RCLCPP_WARN(this->get_logger(), "Transform failed: %s", ex.what());
+        }
+    }*/
+
+    double normalize_angle(double angle) {
+        while (angle > M_PI)  angle -= 2.0 * M_PI;
+        while (angle < -M_PI) angle += 2.0 * M_PI;
+        return angle;
+    }
+
+    void lookAtCallback(const geometry_msgs::msg::PointStamped::SharedPtr msg)
+    {
+        try {
+            geometry_msgs::msg::PointStamped p_cam;
+            tf_buffer_.transform(*msg, p_cam, "torso_lift_link");
+
+            double x = p_cam.point.x;
+            double y = p_cam.point.y;
+            double z = p_cam.point.z;
+
+            double pan = std::atan2(y, x);
+            double dist_xy = std::sqrt(x*x + y*y);
+            double tilt = std::atan2(z, dist_xy);
+
+            auto limited = limitHeadPose(pan, tilt);
+
+            std_msgs::msg::Float64MultiArray head_goal_msg;
+            head_goal_msg.data = {limited[0], limited[1]};
+            head_goal_publisher_->publish(head_goal_msg);
+
+        } catch (tf2::TransformException &ex) {
+            RCLCPP_WARN(this->get_logger(), "TF Error: %s", ex.what());
         }
     }
 

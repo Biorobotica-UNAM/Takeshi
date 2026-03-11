@@ -21,6 +21,10 @@ find_package(tmc_voice_msgs REQUIRED)
 find_package(talker_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+
 # Executable
 add_executable(hsr_bringup src/hsr_bringup.cpp)
 add_executable(hsr_arm_node src/hsr_arm_node.cpp)
@@ -28,6 +32,8 @@ add_executable(hsr_head_node src/hsr_head_node.cpp)
 add_executable(hsr_gripper_node src/hsr_gripper_node.cpp)
 add_executable(hsr_talk_node src/hsr_talk_node.cpp)
 add_executable(hsr_bumper_node src/hsr_bumper_node.cpp)
+
+add_executable(head_control_node src/head_control_node.cpp)
 
 ament_target_dependencies(hsr_bringup
   rclcpp
@@ -68,6 +74,14 @@ ament_target_dependencies(hsr_bumper_node
   geometry_msgs
 )
 
+ament_target_dependencies(head_control_node
+  rclcpp
+  std_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
+
 # Install
 install(TARGETS 
   hsr_bringup
@@ -76,6 +90,7 @@ install(TARGETS
   hsr_gripper_node
   hsr_talk_node
   hsr_bumper_node
+  head_control_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

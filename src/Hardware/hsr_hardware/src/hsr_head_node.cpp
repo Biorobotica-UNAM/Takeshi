@@ -45,9 +45,6 @@ public:
     this->get_parameter("tilt_min", tilt_min_);
     this->get_parameter("tilt_max", tilt_max_);
 
-    // Setup parameter change callback
-    param_callback_handle_ = this->add_on_set_parameters_callback(
-      std::bind(&HeadController::on_parameter_change, this, std::placeholders::_1));
 
     // Publishers
     pub_head_goal_traj_ = this->create_publisher<trajectory_msgs::msg::JointTrajectory>(
@@ -72,11 +69,15 @@ public:
     // Init
     timer_ = this->create_wall_timer(
       std::chrono::milliseconds(100),
-      std::bind(&HeadController::timerCallback, this));
+      std::bind(&HeadController::checkGoalReached, this));
 
-    //initialize head position
-    head_goal_pose_.assign(2, 0.0f);
-    head_current_pose_.assign(2, 0.0f);
+    
+    rclcpp::TimerBase::SharedPtr startup_timer = this->create_wall_timer(
+      std::chrono::milliseconds(2500),
+      [this, startup_timer]() {
+        sendHeadGoalTrajectory(0.0, 0.0, 1.0);
+        startup_timer->cancel();
+      });
 
 
     RCLCPP_INFO(this->get_logger(), "HeadController.->Node has been started.");
@@ -93,7 +94,6 @@ private:
   std::string head_goal_reached_topic_;
 
   double pan_min_, pan_max_, tilt_min_, tilt_max_;
-  double max_vel_ = 1.2f;
 
   rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr  pub_head_goal_traj_;
   rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr       pub_head_current_pose_;
@@ -102,87 +102,30 @@ private:
   rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr    sub_head_goal_pose_;
   rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr sub_head_state_;
 
-  std::vector<float> head_goal_pose_;
-  std::vector<float> head_current_pose_;
+  float current_pan_ = 0.0f;
+  float current_tilt_ = 0.0f;
+  double max_speed = 1.5; // rad/s
+  
+  float target_pan_;
+  float target_tilt_;
+  
   bool goal_received_{false};
-
-  bool startup_initialized_ = false;
-
-  // Parameter callback handle
-  OnSetParametersCallbackHandle::SharedPtr param_callback_handle_;
+  double goal_reached_threshold_ = 0.05;
 
   rclcpp::TimerBase::SharedPtr timer_;
-
-  //############
-  // Runtime parameter update callback
-  rcl_interfaces::msg::SetParametersResult on_parameter_change(
-      const std::vector<rclcpp::Parameter> &params)
-  {
-    rcl_interfaces::msg::SetParametersResult result;
-    result.successful = true;
-
-    for (const auto &param : params)
-    {
-      if (param.get_name()      == "use_namespace")           use_namespace_            = param.as_bool();
-
-      else if (param.get_name() == "head_cmd_topic_")         head_cmd_topic_           = param.as_string();
-      else if (param.get_name() == "head_state_topic")        head_state_topic_         = param.as_string();
-      else if (param.get_name() == "head_goal_topic")         head_goal_topic_          = param.as_string();
-      else if (param.get_name() == "head_current_topic")      head_current_topic_       = param.as_string();
-      else if (param.get_name() == "head_goal_reached_topic") head_goal_reached_topic_  = param.as_string();
-
-      else {
-        result.successful = false;
-        result.reason = "HeadController.-> Unsupported parameter: " + param.get_name();
-        RCLCPP_WARN(this->get_logger(), "HeadController.-> Attempted to update unsupported parameter: %s", param.get_name().c_str());
-        break;
-      }
-    }
-
-    return result;
-  }
-
-  std::string make_name(const std::string &suffix) const
-  {
-    // Ensure suffix starts with "/"
-    std::string sfx = suffix;
-    if (!sfx.empty() && sfx.front() != '/')
-      sfx = "/" + sfx;
-
-    std::string name;
-
-    if (use_namespace_) {
-      // Use node namespace prefix
-      name = this->get_namespace() + sfx;
-
-      // Avoid accidental double slash (e.g., when namespace is "/")
-      if (name.size() > 1 && name[0] == '/' && name[1] == '/')
-        name.erase(0, 1);
-    } else {
-      // Use global namespace (no node namespace prefix)
-      name = sfx;
-    }
-
-    return name;
-  }
+  rclcpp::TimerBase::SharedPtr startup_timer_;
 
   void headStateCallback(
       const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
   {
-    // expected: positions.size() >= 2  (0:pan, 1:tilt)
+    // expected: positions.size() >= 2  (0:tilt, 1:pan)
     if (msg->actual.positions.size() >= 2) {
-      head_current_pose_[0] = static_cast<float>(msg->actual.positions[0]); // pan
-      head_current_pose_[1] = static_cast<float>(msg->actual.positions[1]); // tilt
+      current_tilt_ = static_cast<float>(msg->actual.positions[0]); // tilt
+      current_pan_ = static_cast<float>(msg->actual.positions[1]); // pan
 
       std_msgs::msg::Float64MultiArray arr;
-      arr.data = std::vector<double>(head_current_pose_.begin(), head_current_pose_.end());
+      arr.data = {current_pan_, current_tilt_};
       pub_head_current_pose_->publish(arr);
-    }
-
-    if (!startup_initialized_) {
-      sendHeadGoalTrajectory(0.0f, 0.0f);
-      startup_initialized_ = true;
-      RCLCPP_WARN(this->get_logger(), "HeadController.-> Head Pose Initialized.");
     }
 
   }
@@ -196,48 +139,42 @@ private:
       return;
     }
 
-    float pan  = static_cast<float>(msg->data[0]);
-    float tilt = static_cast<float>(msg->data[1]);
+    double pan  = msg->data[0];
+    double tilt = msg->data[1];
 
     // clamp to limits
-    head_goal_pose_[0] = std::clamp(static_cast<float>(pan),  static_cast<float>(pan_min_),  static_cast<float>(pan_max_));
-    head_goal_pose_[1] = std::clamp(static_cast<float>(tilt), static_cast<float>(tilt_min_), static_cast<float>(tilt_max_));
+    target_pan_ = std::clamp(pan, pan_min_, pan_max_);
+    target_tilt_ = std::clamp(tilt, tilt_min_, tilt_max_);
+
+    double error = std::hypot(target_pan_ - current_pan_, target_tilt_ - current_tilt_);
+    double time = std::max(0.5, error / max_speed);
+
+    if (error < goal_reached_threshold_) return;
+    
 
     goal_received_ = true;
-    sendHeadGoalTrajectory(head_goal_pose_[0], head_goal_pose_[1]);
+    sendHeadGoalTrajectory(target_pan_, target_tilt_, time);
   }
 
-  void timerCallback()
-  {
-    // reach check
-    constexpr float eps_pan  = 0.01f;
-    constexpr float eps_tilt = 0.01f;
-
-    bool reached = (std::fabs(head_current_pose_[0] - head_goal_pose_[0]) <= eps_pan) &&
-                   (std::fabs(head_current_pose_[1] - head_goal_pose_[1]) <= eps_tilt);
-
-    std_msgs::msg::Bool b;
-    b.data = reached;
-    pub_head_goal_reached_->publish(b);
+  void checkGoalReached(){
+    double error = std::hypot(target_pan_ - current_pan_, target_tilt_ - current_tilt_);
+    
+    std_msgs::msg::Bool msg;
+    msg.data = (error < 0.05); // Margen de error de ~3 grados
+    pub_head_goal_reached_->publish(msg);
   }
 
-  void sendHeadGoalTrajectory(float pan, float tilt)
+  void sendHeadGoalTrajectory(float pan, float tilt, double time)
   {
     trajectory_msgs::msg::JointTrajectory traj;
     traj.joint_names = {"head_pan_joint", "head_tilt_joint"}; 
 
     trajectory_msgs::msg::JointTrajectoryPoint p;
+
     p.positions = {pan, tilt};
-
-    // Calculo de distancias angulares entre joints
-    float delta_pan  = std::fabs(head_current_pose_[0] - pan);
-    float delta_tilt = std::fabs(head_current_pose_[1] - tilt);
-
-    float min_delta = std::min(delta_pan, delta_tilt);
-    double time_sec = std::max(0.1, min_delta/ max_vel_);
-    p.time_from_start = rclcpp::Duration::from_seconds(time_sec);
-
+    p.time_from_start = rclcpp::Duration::from_seconds(time);
     traj.points.push_back(p);
+
     pub_head_goal_traj_->publish(traj);
   }
 
@@ -247,12 +184,6 @@ int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<HeadController>();
-  /*No es necesario usar un MultiThreadedExecutor para este nodo,
-   ya que no tiene callbacks que bloqueen o tomen mucho tiempo. 
-   El timer y las suscripciones son ligeras y no requieren concurrencia. */
-  //rclcpp::executors::MultiThreadedExecutor executor;
-  //executor.add_node(node);
-  //executor.spin();
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
