@@ -80,6 +80,7 @@ ament_target_dependencies(head_control_node
   tf2
   tf2_ros
   tf2_geometry_msgs
+  actionlib_msgs
 )
 
 # Install

@@ -53,7 +53,7 @@ public:
         std::bind(&HeadBrigdeNode::headCurrentPoseCallback, this, std::placeholders::_1));
     
     look_at_subscriber_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
-        "head/look_at_point", 5,
+        "/hardware/head/look_at", 1,
         std::bind(&HeadBrigdeNode::lookAtCallback, this, std::placeholders::_1));
 
     nav_status_subscriber_ = this->create_subscription<actionlib_msgs::msg::GoalStatus>(
@@ -133,6 +133,8 @@ private:
 
     void lookAtCallback(const geometry_msgs::msg::PointStamped::SharedPtr msg)
     {
+        RCLCPP_INFO(this->get_logger(), "Received look_at_point command: [%.2f, %.2f, %.2f] in frame %s",
+                    msg->point.x, msg->point.y, msg->point.z, msg->header.frame_id.c_str());
         try {
             // Transform to a fixed frame to ensure consistent calculations
             geometry_msgs::msg::PointStamped p_cam;
