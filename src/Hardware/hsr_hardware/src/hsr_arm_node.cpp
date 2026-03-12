@@ -26,7 +26,6 @@ public:
   {
     //############
     // Declare parameters with default values
-    this->declare_parameter<bool>(        "use_namespace",   false);
     this->declare_parameter<std::string>( "arm_cmd_topic",   "/arm_trajectory_controller/joint_trajectory");
     this->declare_parameter<std::string>( "arm_state_topic", "/arm_trajectory_controller/controller_state");
     this->declare_parameter("torso_default_pose", 0.0);
@@ -34,41 +33,36 @@ public:
 
 
     // Initialize internal variables from declared parameters
-    this->get_parameter("use_namespace",    use_namespace_);
     this->get_parameter("arm_cmd_topic",    arm_cmd_topic_);
     this->get_parameter("arm_state_topic",  arm_state_topic_);
     this->get_parameter("torso_default_pose", torso_default_pose_);
     this->get_parameter("arm_default_pose", arm_default_pose_);
 
-    // Setup parameter change callback
-    param_callback_handle_ = this->add_on_set_parameters_callback(
-      std::bind(&ArmController::on_parameter_change, this, std::placeholders::_1));
-
     // Publishers
     pub_torso_current_pose_ = this->create_publisher<std_msgs::msg::Float64>(
-          make_name("torso/current_pose"), 
-          rclcpp::QoS(10).reliable());
+      "torso/current_pose", 
+      rclcpp::QoS(10).reliable());
     pub_arm_current_pose_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
-          make_name("arm/current_pose"), 
-          rclcpp::QoS(10).reliable());
+      "arm/current_pose", 
+      rclcpp::QoS(10).reliable());
     pub_arm_goal_pose_ = this->create_publisher<trajectory_msgs::msg::JointTrajectory>(
       arm_cmd_topic_, 
       rclcpp::QoS(10).reliable());
     pub_arm_goal_reached_ = this->create_publisher<std_msgs::msg::Bool>(
-      make_name("arm/goal_reached"), 
+      "arm/goal_reached", 
       rclcpp::QoS(10).reliable());
     pub_torso_goal_reached_ = this->create_publisher<std_msgs::msg::Bool>(
-      make_name("torso/goal_reached"), 
+      "torso/goal_reached", 
       rclcpp::QoS(10).reliable());
 
     // Subscribers
     sub_arm_goal_pose_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
-        make_name("arm/goal_pose"), 
+        "arm/goal_pose", 
         rclcpp::QoS(10).reliable(),
         std::bind(&ArmController::armGoalPoseCallback, this, std::placeholders::_1));
 
     sub_torso_goal_pose_ = this->create_subscription<std_msgs::msg::Float64>(
-        make_name("torso/goal_pose"), 
+        "torso/goal_pose", 
         rclcpp::QoS(10).reliable(),
         std::bind(&ArmController::torsoGoalPoseCallback, this, std::placeholders::_1));
 
@@ -91,8 +85,6 @@ public:
   }
 
 private:
-
-  bool use_namespace_   = false;
 
   std::string arm_cmd_topic_;
   std::string arm_state_topic_;
@@ -127,55 +119,6 @@ private:
 
   rclcpp::TimerBase::SharedPtr timer_;
 
-  //############
-  // Runtime parameter update callback
-  rcl_interfaces::msg::SetParametersResult on_parameter_change(
-      const std::vector<rclcpp::Parameter> &params)
-  {
-    rcl_interfaces::msg::SetParametersResult result;
-    result.successful = true;
-
-    for (const auto &param : params)
-    {
-      if (param.get_name()      == "use_namespace")   use_namespace_    = param.as_bool();
-
-      else if (param.get_name() == "arm_cmd_topic")   arm_cmd_topic_    = param.as_string();
-      else if (param.get_name() == "arm_state_topic") arm_state_topic_  = param.as_string();
-
-      else {
-        result.successful = false;
-        result.reason = "ArmController.-> Unsupported parameter: " + param.get_name();
-        RCLCPP_WARN(this->get_logger(), "ArmController.-> Attempted to update unsupported parameter: %s", param.get_name().c_str());
-        break;
-      }
-    }
-
-    return result;
-  }
-
-  std::string make_name(const std::string &suffix) const
-  {
-    // Ensure suffix starts with "/"
-    std::string sfx = suffix;
-    if (!sfx.empty() && sfx.front() != '/')
-      sfx = "/" + sfx;
-
-    std::string name;
-
-    if (use_namespace_) {
-      // Use node namespace prefix
-      name = this->get_namespace() + sfx;
-
-      // Avoid accidental double slash (e.g., when namespace is "/")
-      if (name.size() > 1 && name[0] == '/' && name[1] == '/')
-        name.erase(0, 1);
-    } else {
-      // Use global namespace (no node namespace prefix)
-      name = sfx;
-    }
-
-    return name;
-  }
 
   void armCurrentPoseCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
   {

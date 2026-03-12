@@ -1,5 +1,3 @@
-// Copyright (C) 2016 Toyota Motor Corporation
-// maintainer ry0hei-kobayashi
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/executors/multi_threaded_executor.hpp>
 
@@ -34,7 +32,6 @@ public:
 
 
     // Initialize internal variables from declared parameters
-    this->get_parameter("use_namespace",            use_namespace_);
     this->get_parameter("head_cmd_topic_",          head_cmd_topic_);
     this->get_parameter("head_state_topic",         head_state_topic_);
     this->get_parameter("head_goal_topic",          head_goal_topic_);
@@ -71,21 +68,10 @@ public:
       std::chrono::milliseconds(100),
       std::bind(&HeadController::checkGoalReached, this));
 
-    
-    rclcpp::TimerBase::SharedPtr startup_timer = this->create_wall_timer(
-      std::chrono::milliseconds(2500),
-      [this, startup_timer]() {
-        sendHeadGoalTrajectory(0.0, 0.0, 1.0);
-        startup_timer->cancel();
-      });
-
-
     RCLCPP_INFO(this->get_logger(), "HeadController.->Node has been started.");
   }
 
 private:
-
-  bool use_namespace_   = false;
 
   std::string head_cmd_topic_;
   std::string head_state_topic_;
@@ -109,6 +95,7 @@ private:
   float target_pan_;
   float target_tilt_;
   
+  bool initialized_{false};
   bool goal_received_{false};
   double goal_reached_threshold_ = 0.05;
 
@@ -118,6 +105,11 @@ private:
   void headStateCallback(
       const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
   {
+    if(!initialized_ && msg->actual.positions[0] == 0.0 && msg->actual.positions[1] == 0.0){
+      initialized_ = true;
+      sendHeadGoalTrajectory(0.0, 0.0, 1.0);
+    }
+
     // expected: positions.size() >= 2  (0:tilt, 1:pan)
     if (msg->actual.positions.size() >= 2) {
       current_tilt_ = static_cast<float>(msg->actual.positions[0]); // tilt

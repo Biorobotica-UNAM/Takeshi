@@ -1,11 +1,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include <cmath>
+#include <algorithm>
 
 #include "std_msgs/msg/float64_multi_array.hpp"
-#include "std_msgs/msg/string.hpp"
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "geometry_msgs/msg/point_stamped.hpp"
+#include "actionlib_msgs/msg/goal_status.hpp"
 
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
@@ -20,10 +21,11 @@ public:
     // Declare parameters
     this->declare_parameter<std::string>( "head_goal_topic",          "/hardware/head/goal_pose");
     this->declare_parameter<std::string>( "head_current_pose_topic",  "/hardware/head/current_pose");
-    this->declare_parameter<std::string>( "head_goal_reached_topic",  "/hardware/head/goal_reached");
+    //this->declare_parameter<std::string>( "head_goal_reached_topic",  "/hardware/head/goal_reached");
 
     this->declare_parameter<std::string>("camera_frame",                "head_rgbd_sensor_rgb_frame");
     this->declare_parameter<std::string>("base_frame",                  "base_link");
+    this->declare_parameter<std::string>("neck_frame",                  "torso_lift_link");
 
     this->declare_parameter<double>("pan_min", -1.57);
     this->declare_parameter<double>("pan_max", 1.57);
@@ -36,13 +38,13 @@ public:
 
     camera_frame_ = this->get_parameter("camera_frame").as_string();
     base_frame_ = this->get_parameter("base_frame").as_string();
+    neck_frame_ = this->get_parameter("neck_frame").as_string();
 
-    pan_min = this->get_parameter("pan_min").as_double();
-    pan_max = this->get_parameter("pan_max").as_double();
-    tilt_min = this->get_parameter("tilt_min").as_double();
-    tilt_max = this->get_parameter("tilt_max").as_double();
-    dead_zone_threshold = this->get_parameter("dead_zone_threshold").as_double();
-
+    pan_min = static_cast<float>(this->get_parameter("pan_min").as_double());
+    pan_max = static_cast<float>(this->get_parameter("pan_max").as_double());
+    tilt_min = static_cast<float>(this->get_parameter("tilt_min").as_double());
+    tilt_max = static_cast<float>(this->get_parameter("tilt_max").as_double());
+    dead_zone_threshold = static_cast<float>(this->get_parameter("dead_zone_threshold").as_double());
     // Service Client
     
     // Subscribers
@@ -51,30 +53,25 @@ public:
         std::bind(&HeadBrigdeNode::headCurrentPoseCallback, this, std::placeholders::_1));
     
     look_at_subscriber_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
-        "head/look_at_point", 10,
+        "head/look_at_point", 5,
         std::bind(&HeadBrigdeNode::lookAtCallback, this, std::placeholders::_1));
 
-    head_tracking_ = this->create_subscription<std_msgs::msg::String>(
-        "head/tracking_target_frame", 10,
-        std::bind(&HeadBrigdeNode::headTrackingCallback, this, std::placeholders::_1));    
-        // Publishers
+    nav_status_subscriber_ = this->create_subscription<actionlib_msgs::msg::GoalStatus>(
+        "/navigation/status", 5,
+        std::bind(&HeadBrigdeNode::navigationStatusCallback, this, std::placeholders::_1));
+
+     // Publishers
+
+    // Publishers
     head_goal_publisher_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
         head_goal_topic_, 10);
-
-    // Timer
-
-    tracking_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(100),
-        std::bind(&HeadBrigdeNode::onTrackingTick, this));
-    tracking_timer_->cancel();
-
 
     RCLCPP_INFO(this->get_logger(), "HEAD CONTROL NODE BRIDGE BY RUSANROD HAS BEEN STARTED.");
 }
 private:
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr head_cp_subscriber_;
     rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr look_at_subscriber_;
-    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr head_tracking_;
+    rclcpp::Subscription<actionlib_msgs::msg::GoalStatus>::SharedPtr nav_status_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr head_goal_publisher_;
 
     tf2_ros::Buffer tf_buffer_;
@@ -86,91 +83,35 @@ private:
 
     std::string camera_frame_;
     std::string base_frame_;
+    std::string neck_frame_;
     
     // System variables
-    double pan_min, pan_max, tilt_min, tilt_max, dead_zone_threshold;
+    float pan_min, pan_max, tilt_min, tilt_max, dead_zone_threshold;
 
     float current_pan = 0.0;
     float current_tilt = 0.0;
-    bool tracking_enabled_ = false;
-    float tracking_gain_ = 0.8;
-
-    std::string target_frame_to_track_;
-    rclcpp::TimerBase::SharedPtr tracking_timer_;
 
     // Utility functions
 
-    std::vector<float> limitHeadPose(float goalPan, float goalTilt)
+    std::vector<float> clampHeadPose(float goalPan, float goalTilt)
     {
         // Pan limits
-        if(goalPan > pan_max) goalPan = pan_max;
-        if(goalPan < pan_min) goalPan = pan_min;
-        
-        // Tilt limits
-        if(goalTilt > tilt_max) goalTilt = tilt_max;
-        if(goalTilt < tilt_min) goalTilt = tilt_min;
+        float clampedPan = std::clamp(goalPan, pan_min, pan_max);
+        float clampedTilt = std::clamp(goalTilt, tilt_min, tilt_max);
 
-        return {goalPan, goalTilt};
-    }
-
-    std::vector<float> xyzToPanTilt(float x, float y, float z){
-        float pan_error = atan2(x, z);
-
-        float dist_xz = sqrt(x * x + z * z);
-        float tilt_error = atan2(-y, dist_xz);
-        return {pan_error, tilt_error};
-    }
-
-    void pointHeadTo(float x, float y, float z, bool track_mode)
-    {
-        auto error = xyzToPanTilt(x,y,z);
-
-        float gain = track_mode ? tracking_gain_ : 1.0f;
-
-        float apply_pan_err = (std::abs(error[0]) > dead_zone_threshold) ? error[0] : 0.0f;
-        float apply_tilt_err = (std::abs(error[1]) > dead_zone_threshold) ? error[1] : 0.0f;
-
-        float target_pan = current_pan - (apply_pan_err * gain);
-        float target_tilt = current_tilt + (apply_tilt_err * gain);
-
-        auto limited = limitHeadPose(target_pan, target_tilt);
-
-        RCLCPP_INFO(this->get_logger(), "Pointing head to: pan=%.2f, tilt=%.2f. With gain: %.2f", limited[0], limited[1], gain);
-
-        // Create and publish message
-        std_msgs::msg::Float64MultiArray head_goal_msg;
-        head_goal_msg.data = {limited[0], limited[1]};
-        head_goal_publisher_->publish(head_goal_msg);
-    }
-
-    void onTrackingTick(){
-        if(tracking_enabled_) {
-            try {
-                // Get the current transform from base to target frame
-                geometry_msgs::msg::TransformStamped transform = tf_buffer_.lookupTransform(
-                    camera_frame_, target_frame_to_track_, tf2::TimePointZero);
-
-                // Extract the translation components
-                float dx = transform.transform.translation.x;
-                float dy = transform.transform.translation.y;
-                float dz = transform.transform.translation.z;
-
-                // Point the head towards the target
-                pointHeadTo(dx, dy, dz, true);
-
-            } catch (tf2::TransformException &ex) {
-                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-                     "Tracking transform failed: %s", ex.what());
-            }
-        }
+        return {clampedPan, clampedTilt};
     }
 
     // Callbacks
     void headCurrentPoseCallback(const std_msgs::msg::Float64MultiArray::SharedPtr msg)
     {
-        auto current = msg->data;
-        current_pan = current[0];
-        current_tilt = current[1];
+        if (msg->data.size() < 2) {
+            RCLCPP_WARN(this->get_logger(), "Current pose message has less than 2 elements.");
+            return;
+        }
+
+        current_pan = static_cast<float>(msg->data[0]);
+        current_tilt = static_cast<float>(msg->data[1]);
     }
 /*
     void lookAtCallback(const geometry_msgs::msg::PointStamped::SharedPtr msg)
@@ -190,30 +131,32 @@ private:
         }
     }*/
 
-    double normalize_angle(double angle) {
-        while (angle > M_PI)  angle -= 2.0 * M_PI;
-        while (angle < -M_PI) angle += 2.0 * M_PI;
-        return angle;
-    }
-
     void lookAtCallback(const geometry_msgs::msg::PointStamped::SharedPtr msg)
     {
         try {
+            // Transform to a fixed frame to ensure consistent calculations
             geometry_msgs::msg::PointStamped p_cam;
-            tf_buffer_.transform(*msg, p_cam, "torso_lift_link");
+            tf_buffer_.transform(*msg, p_cam, neck_frame_);
 
             double x = p_cam.point.x;
             double y = p_cam.point.y;
             double z = p_cam.point.z;
 
             double pan = std::atan2(y, x);
-            double dist_xy = std::sqrt(x*x + y*y);
+            double dist_xy = std::sqrt(x * x + y * y);
             double tilt = std::atan2(z, dist_xy);
 
-            auto limited = limitHeadPose(pan, tilt);
+            auto clamped_angles = clampHeadPose(static_cast<float>(pan), static_cast<float>(tilt));
+
+            float pan_delta = std::abs(clamped_angles[0] - current_pan);
+            float tilt_delta = std::abs(clamped_angles[1] - current_tilt);
+
+            // Avoids minimal and unnecessary movements
+            float pan_target = pan_delta > dead_zone_threshold ? clamped_angles[0] : current_pan;
+            float tilt_target = tilt_delta > dead_zone_threshold ? clamped_angles[1] : current_tilt;
 
             std_msgs::msg::Float64MultiArray head_goal_msg;
-            head_goal_msg.data = {limited[0], limited[1]};
+            head_goal_msg.data = {pan_target, tilt_target};
             head_goal_publisher_->publish(head_goal_msg);
 
         } catch (tf2::TransformException &ex) {
@@ -221,20 +164,15 @@ private:
         }
     }
 
-    void headTrackingCallback(const std_msgs::msg::String::SharedPtr msg)
+    void navigationStatusCallback(const actionlib_msgs::msg::GoalStatus::SharedPtr msg)
     {
-        if(msg->data.empty()) {
-            tracking_enabled_ = false;
-            tracking_timer_->cancel();
-            RCLCPP_INFO(this->get_logger(), "Tracking detenido.");
-        } else {
-            target_frame_to_track_ = msg->data;
-            tracking_enabled_ = true;
-            tracking_timer_->reset(); // Reinicia el timer existente
-            RCLCPP_INFO(this->get_logger(), "Tracking frame: %s", target_frame_to_track_.c_str());
+        // Check if the navigation goal has been reached
+        if (msg->status == actionlib_msgs::msg::GoalStatus::SUCCEEDED) {
+            std_msgs::msg::Float64MultiArray head_goal_msg;
+            head_goal_msg.data = {0.0, 0.0}; // Reset to default pose
+            head_goal_publisher_->publish(head_goal_msg);
         }
     }
-        
 };
 
 int main(int argc, char **argv)
