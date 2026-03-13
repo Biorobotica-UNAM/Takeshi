@@ -96,7 +96,7 @@ private:
   float target_tilt_;
   
   bool initialized_{false};
-  bool goal_received_{false};
+  bool moving_on_goal_{false};
   double goal_reached_threshold_ = 0.05;
 
   rclcpp::TimerBase::SharedPtr timer_;
@@ -138,22 +138,36 @@ private:
     target_pan_ = std::clamp(pan, pan_min_, pan_max_);
     target_tilt_ = std::clamp(tilt, tilt_min_, tilt_max_);
 
+    moving_on_goal_ = true;
+
     double error = std::hypot(target_pan_ - current_pan_, target_tilt_ - current_tilt_);
     double time = std::max(0.5, error / max_speed);
-
-    if (error < goal_reached_threshold_) return;
     
+    //if (error < goal_reached_threshold_) return;
+    //goal_received_ = true;
 
-    goal_received_ = true;
     sendHeadGoalTrajectory(target_pan_, target_tilt_, time);
   }
 
-  void checkGoalReached(){
-    double error = std::hypot(target_pan_ - current_pan_, target_tilt_ - current_tilt_);
-    
-    std_msgs::msg::Bool msg;
-    msg.data = (error < 0.05); // Margen de error de ~3 grados
-    pub_head_goal_reached_->publish(msg);
+  void checkGoalReached() {
+      double error = std::hypot(target_pan_ - current_pan_, target_tilt_ - current_tilt_);
+      bool reached = (error < goal_reached_threshold_);
+
+      // Publicar el estado actual
+      std_msgs::msg::Bool msg;
+      msg.data = reached;
+      pub_head_goal_reached_->publish(msg);
+
+      // SI no hemos llegado Y se supone que deberíamos estar moviéndonos:
+      if (moving_on_goal_ && !reached) {
+          // Opcional: Podrías usar un contador para no re-enviar a 10Hz (el timer corre a 100ms)
+          // Pero ROS2 aguantará bien un re-envío cada 100ms si el error es grande.
+          double time = std::max(0.2, error / max_speed); // Tiempo corto para ajustes finos
+          sendHeadGoalTrajectory(target_pan_, target_tilt_, time);
+      } 
+      else if (reached) {
+          moving_on_goal_ = false; // Ya llegamos, dejamos de insistir
+      }
   }
 
   void sendHeadGoalTrajectory(float pan, float tilt, double time)
