@@ -14,7 +14,7 @@
 [submodule "src/Hardware/hardware_tools"]
 	path = src/Hardware/hardware_tools
 	url = git@github.com:Biorobotica-UNAM/hardware_tools.git
-	branch = main
+	branch = dev/head_control
 [submodule "src/Hardware/door_detector"]
 	path = src/Hardware/door_detector
 	url = git@github.com:Biorobotica-UNAM/door_detector.git
@@ -55,11 +55,11 @@
 [submodule "src/HRI/human_detector"]
 	path = src/HRI/human_detector
 	url = git@github.com:Biorobotica-UNAM/human_detector.git
-	branch = main
+	branch = tracker
 [submodule "src/HRI/human_follower"]
 	path = src/HRI/human_follower
 	url = git@github.com:Biorobotica-UNAM/human_follower.git
-	branch = main
+	branch = dev
 	
 ####    Vision    ####
 [submodule "src/Vision/face_recognizer"]

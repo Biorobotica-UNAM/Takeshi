@@ -57,7 +57,7 @@ public:
         std::bind(&HeadBrigdeNode::lookAtCallback, this, std::placeholders::_1));
 
     nav_status_subscriber_ = this->create_subscription<actionlib_msgs::msg::GoalStatus>(
-        "/navigation/status", 5,
+        "/navigation/status", 1,
         std::bind(&HeadBrigdeNode::navigationStatusCallback, this, std::placeholders::_1));
 
      // Publishers
@@ -90,6 +90,7 @@ private:
 
     float current_pan = 0.0;
     float current_tilt = 0.0;
+    float alpha = 0.5; // Smoothing factor for head movement
 
     // Utility functions
 
@@ -156,9 +157,13 @@ private:
             // Avoids minimal and unnecessary movements
             float pan_target = pan_delta > dead_zone_threshold ? clamped_angles[0] : current_pan;
             float tilt_target = tilt_delta > dead_zone_threshold ? clamped_angles[1] : current_tilt;
+            
+            pan_target = (alpha * pan_target) ;
+            tilt_target = (alpha * tilt_target);
 
             std_msgs::msg::Float64MultiArray head_goal_msg;
             head_goal_msg.data = {pan_target, tilt_target};
+            //head_goal_msg.data = {current_pan, current_tilt};
             head_goal_publisher_->publish(head_goal_msg);
 
         } catch (tf2::TransformException &ex) {
