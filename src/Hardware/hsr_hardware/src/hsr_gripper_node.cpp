@@ -19,18 +19,11 @@ public:
     : Node("gripper_controller")
     {
         // Subscriber gripper command (corregido con std::bind)
-        gripper_command_sub_ = this->create_subscription<std_msgs::msg::String>(
-            "gripper_command", 10,
-            std::bind(&GripperNode::callback, this, std::placeholders::_1)
-        );
-
-        // Publicador de trayectoria
-        gripper_trajectory_pub_ = this->create_publisher<trajectory_msgs::msg::JointTrajectory>(
-            "gripper_controller/joint_trajectory", 1);
-
-        // Cliente de acción para aplicar fuerza
-        apply_force_client_ = rclcpp_action::create_client<GripperApplyEffort>(
-            this, "gripper_controller/apply_force");
+        griper_cmd_pub_ = this-> create_publisher<trajectory_msgs::msg::JointTrajectory>(
+            "/hardware/gripper/command", rclcpp::QoS(10).reliable());
+        
+        gripper_cmd_force_ = this->create_publisher<tmc_control_msgs::msg::GripperApplyEffort>(
+            "/hardware/gripper/force_command", rclcpp::QoS(10).reliable());
 
         // Parámetros
         this->declare_parameter<double>("open_angle_deg", 90.0);

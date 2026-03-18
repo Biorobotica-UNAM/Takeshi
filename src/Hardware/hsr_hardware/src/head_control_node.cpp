@@ -23,9 +23,9 @@ public:
     this->declare_parameter<std::string>( "head_current_pose_topic",  "/hardware/head/current_pose");
     //this->declare_parameter<std::string>( "head_goal_reached_topic",  "/hardware/head/goal_reached");
 
-    this->declare_parameter<std::string>("camera_frame",                "head_rgbd_sensor_rgb_frame");
+    this->declare_parameter<std::string>("camera_frame",                "head_rgbd_sensor_link");
     this->declare_parameter<std::string>("base_frame",                  "base_link");
-    this->declare_parameter<std::string>("neck_frame",                  "torso_lift_link");
+    //this->declare_parameter<std::string>("neck_frame",                  "torso_lift_link");
 
     this->declare_parameter<double>("pan_min", -1.57);
     this->declare_parameter<double>("pan_max", 1.57);
@@ -38,7 +38,7 @@ public:
 
     camera_frame_ = this->get_parameter("camera_frame").as_string();
     base_frame_ = this->get_parameter("base_frame").as_string();
-    neck_frame_ = this->get_parameter("neck_frame").as_string();
+    //neck_frame_ = this->get_parameter("neck_frame").as_string();
 
     pan_min = static_cast<float>(this->get_parameter("pan_min").as_double());
     pan_max = static_cast<float>(this->get_parameter("pan_max").as_double());
@@ -54,7 +54,7 @@ public:
     
     look_at_subscriber_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
         "/hardware/head/look_at", 1,
-        std::bind(&HeadBrigdeNode::lookAtCallback, this, std::placeholders::_1));
+        std::bind(&HeadBrigdeNode::lookAtCallbackFixed, this, std::placeholders::_1));
 
     nav_status_subscriber_ = this->create_subscription<actionlib_msgs::msg::GoalStatus>(
         "/navigation/status", 1,
@@ -83,7 +83,7 @@ private:
 
     std::string camera_frame_;
     std::string base_frame_;
-    std::string neck_frame_;
+    //std::string neck_frame_;
     
     // System variables
     float pan_min, pan_max, tilt_min, tilt_max, dead_zone_threshold;
@@ -139,7 +139,7 @@ private:
         try {
             // Transform to a fixed frame to ensure consistent calculations
             geometry_msgs::msg::PointStamped p_cam;
-            tf_buffer_.transform(*msg, p_cam, neck_frame_);
+            //tf_buffer_.transform(*msg, p_cam, neck_frame_);
 
             double x = p_cam.point.x;
             double y = p_cam.point.y;
@@ -164,6 +164,46 @@ private:
             std_msgs::msg::Float64MultiArray head_goal_msg;
             head_goal_msg.data = {pan_target, tilt_target};
             //head_goal_msg.data = {current_pan, current_tilt};
+            head_goal_publisher_->publish(head_goal_msg);
+
+        } catch (tf2::TransformException &ex) {
+            RCLCPP_WARN(this->get_logger(), "TF Error: %s", ex.what());
+        }
+    }
+
+    void lookAtCallbackFixed(const geometry_msgs::msg::PointStamped::SharedPtr msg)
+    {
+        RCLCPP_INFO(this->get_logger(), "Received look_at_point command: [%.2f, %.2f, %.2f] in frame %s",
+                    msg->point.x, msg->point.y, msg->point.z, msg->header.frame_id.c_str());
+        try {
+            // Transform to a fixed frame to ensure consistent calculations
+            geometry_msgs::msg::PointStamped target_in_base;
+            tf_buffer_.transform(*msg, target_in_base, camera_frame_);
+            
+            geometry_msgs::msg::TransformStamped tf_base_to_cam;
+            tf_base_to_cam = tf_buffer_.lookupTransform(base_frame_, camera_frame_, tf2::TimePointZero);
+
+            double dx = target_in_base.point.x - tf_base_to_cam.transform.translation.x;
+            double dy = target_in_base.point.y - tf_base_to_cam.transform.translation.y;
+            double dz = target_in_base.point.z - tf_base_to_cam.transform.translation.z;
+            
+            double dist_xy = std::sqrt(dx * dx + dy * dy);
+            
+            if (dist_xy < 1e-4) return;
+
+            double pan = std::atan2(dy, dx);
+            double tilt = -std::atan2(dz, dist_xy);
+
+            auto clamped = clampHeadPose(static_cast<float>(pan), static_cast<float>(tilt));
+
+            float pan_delta  = std::abs(clamped[0] - current_pan);
+            float tilt_delta = std::abs(clamped[1] - current_tilt);
+
+            float pan_target  = pan_delta  > dead_zone_threshold ? clamped[0] : current_pan;
+            float tilt_target = tilt_delta > dead_zone_threshold ? clamped[1] : current_tilt;
+
+            std_msgs::msg::Float64MultiArray head_goal_msg;
+            head_goal_msg.data = {clamped[0], clamped[1]};
             head_goal_publisher_->publish(head_goal_msg);
 
         } catch (tf2::TransformException &ex) {
