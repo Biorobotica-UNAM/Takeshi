@@ -29,7 +29,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 add_executable(hsr_bringup src/hsr_bringup.cpp)
 add_executable(hsr_arm_node src/hsr_arm_node.cpp)
 add_executable(hsr_head_node src/hsr_head_node.cpp)
-add_executable(hsr_gripper_node src/hsr_gripper_node.cpp)
+#add_executable(hsr_gripper_node src/hsr_gripper_node.cpp)
 add_executable(hsr_talk_node src/hsr_talk_node.cpp)
 add_executable(hsr_bumper_node src/hsr_bumper_node.cpp)
 
@@ -54,12 +54,12 @@ ament_target_dependencies(hsr_head_node
   control_msgs
 )
 
-ament_target_dependencies(hsr_gripper_node
-  rclcpp
-  trajectory_msgs
-  rclcpp_action
-  tmc_control_msgs
-)
+#ament_target_dependencies(hsr_gripper_node
+#  rclcpp
+#  trajectory_msgs
+#  rclcpp_action
+#  tmc_control_msgs
+#)
 
 ament_target_dependencies(hsr_talk_node
   rclcpp
@@ -88,7 +88,7 @@ install(TARGETS
   hsr_bringup
   hsr_arm_node
   hsr_head_node
-  hsr_gripper_node
+  #hsr_gripper_node
   hsr_talk_node
   hsr_bumper_node
   head_control_node
