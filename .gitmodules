@@ -120,3 +120,7 @@
 	path = src/Supervisor/supervisor_execution
 	url = git@github.com:Biorobotica-UNAM/supervisor_execution.git
 	branch = dev/supervisor-execution
+[submodule "src/Vision/vision_tools"]
+	path = src/Vision/vision_tools
+	url = git@github.com:Biorobotica-UNAM/vision_tools.git
+	branch = vision-tools
