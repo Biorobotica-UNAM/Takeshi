@@ -65,11 +65,15 @@
 [submodule "src/Vision/face_recognizer"]
 	path = src/Vision/face_recognizer
 	url = git@github.com:Biorobotica-UNAM/face_recognizer.git
-	branch = main
+	branch = face_recog
 [submodule "src/Vision/object_recognizer"]
 	path = src/Vision/object_recognizer
 	url = git@github.com:Biorobotica-UNAM/object_recognizer.git
 	branch = yolo-detector
+[submodule "src/Vision/vision_tools"]
+	path = src/Vision/vision_tools
+	url = git@github.com:Biorobotica-UNAM/vision_tools.git
+	branch = vision-tools
 
 ####    Planning    ####
 [submodule "src/Planning/planning_tools"]
@@ -102,6 +106,10 @@
 	path = src/Supervisor/surge_et_ambula
 	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
 	branch = main
+[submodule "src/Executor/tasks"]
+	path = src/Executor/tasks
+	url = git@github.com:Biorobotica-UNAM/tasks.git
+
 
 ####    Supervisor    ####
 [submodule "src/Supervisor/supervisor_manager"]
@@ -120,10 +128,4 @@
 	path = src/Supervisor/supervisor_execution
 	url = git@github.com:Biorobotica-UNAM/supervisor_execution.git
 	branch = dev/supervisor-execution
-[submodule "src/Vision/vision_tools"]
-	path = src/Vision/vision_tools
-	url = git@github.com:Biorobotica-UNAM/vision_tools.git
-	branch = vision-tools
-[submodule "src/Executor/tasks"]
-	path = src/Executor/tasks
-	url = git@github.com:Biorobotica-UNAM/tasks.git
+
