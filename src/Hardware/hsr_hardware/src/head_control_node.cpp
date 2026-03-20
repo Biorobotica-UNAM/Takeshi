@@ -68,7 +68,7 @@ public:
     // Timers
 
     control_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(100), std::bind(&HeadBrigdeNode::control_cycle, this));
+        std::chrono::milliseconds(40), std::bind(&HeadBrigdeNode::control_cycle, this));
             
     RCLCPP_INFO(this->get_logger(), "HEAD CONTROL NODE BRIDGE BY RUSANROD HAS BEEN STARTED.");
 }
@@ -97,7 +97,7 @@ private:
 
     float current_pan = 0.0;
     float current_tilt = 0.0;
-    float alpha = 1.0;
+    float alpha = 0.85;
 
     // Utility functions
 
@@ -161,10 +161,10 @@ private:
             double tilt_target = std::atan2(dz, dist_horizontal);
 
             // cambio 
-            double pan_diff = std::abs(pan_target - current_pan);
-            double tilt_diff = std::abs(tilt_target - current_tilt);
+            //double pan_diff = std::abs(pan_target - current_pan);
+            //double tilt_diff = std::abs(tilt_target - current_tilt);
 
-            if (pan_diff > dead_zone_threshold || tilt_diff > dead_zone_threshold){
+            //if (pan_diff > dead_zone_threshold || tilt_diff > dead_zone_threshold){
                 float smooth_pan = (alpha * pan_target) + ((1.0 - alpha) * current_pan);
                 float smooth_tilt = (alpha * tilt_target) + ((1.0 - alpha) * current_tilt);
             
@@ -177,7 +177,7 @@ private:
                 std_msgs::msg::Float64MultiArray head_goal_msg;
                 head_goal_msg.data = {clamped[0], clamped[1]};
                 head_goal_publisher_->publish(head_goal_msg);
-            }
+            
 
 
         } catch (tf2::TransformException &ex) {
