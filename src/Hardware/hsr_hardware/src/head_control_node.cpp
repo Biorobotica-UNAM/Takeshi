@@ -147,12 +147,25 @@ private:
             // dz positivo es arriba -> atan2 positivo es arriba.
             double tilt_target = std::atan2(dz, dist_horizontal);
 
-            // 6. Límites y publicación
-            auto clamped = clampHeadPose(static_cast<float>(pan_target), static_cast<float>(tilt_target));
+            // cambio 
+            double pan_diff = std::abs(pan_target - current_pan);
+            double tilt_diff = std::abs(tilt_target - current_tilt);
+
+            if (pan_diff > dead_zone_threshold || tilt_diff > dead_zone_threshold){
+                float smooth_pan = (alpha * pan_target) + ((1.0 - alpha) * current_pan);
+                float smooth_tilt = (alpha * tilt_target) + ((1.0 - alpha) * current_tilt);
             
-            std_msgs::msg::Float64MultiArray head_goal_msg;
-            head_goal_msg.data = {clamped[0], clamped[1]};
-            head_goal_publisher_->publish(head_goal_msg);
+
+            // 6. Límites y publicación
+            //cambiox2
+                auto clamped = clampHeadPose(smooth_pan, smooth_tilt);
+            //auto clamped = clampHeadPose(static_cast<float>(pan_target), static_cast<float>(tilt_target));
+            
+                std_msgs::msg::Float64MultiArray head_goal_msg;
+                head_goal_msg.data = {clamped[0], clamped[1]};
+                head_goal_publisher_->publish(head_goal_msg);
+            }
+
 
         } catch (tf2::TransformException &ex) {
             RCLCPP_WARN(this->get_logger(), "Error: %s", ex.what());
