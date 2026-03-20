@@ -68,7 +68,7 @@ public:
     // Timers
 
     control_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(50), std::bind(&HeadBrigdeNode::control_cycle, this));
+        std::chrono::milliseconds(100), std::bind(&HeadBrigdeNode::control_cycle, this));
             
     RCLCPP_INFO(this->get_logger(), "HEAD CONTROL NODE BRIDGE BY RUSANROD HAS BEEN STARTED.");
 }
@@ -97,7 +97,7 @@ private:
 
     float current_pan = 0.0;
     float current_tilt = 0.0;
-    float alpha = 0.7;
+    float alpha = 1.0;
 
     // Utility functions
 
