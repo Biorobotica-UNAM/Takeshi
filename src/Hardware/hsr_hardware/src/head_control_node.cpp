@@ -60,12 +60,16 @@ public:
         "/navigation/status", 1,
         std::bind(&HeadBrigdeNode::navigationStatusCallback, this, std::placeholders::_1));
 
-     // Publishers
-
-    // Publishers
+        
+        // Publishers
     head_goal_publisher_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
         head_goal_topic_, 10);
+    
+    // Timers
 
+    control_timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(50), std::bind(&HeadBrigdeNode::control_cycle, this));
+            
     RCLCPP_INFO(this->get_logger(), "HEAD CONTROL NODE BRIDGE BY RUSANROD HAS BEEN STARTED.");
 }
 private:
@@ -85,12 +89,15 @@ private:
     std::string base_frame_;
     std::string neck_frame_;
     
+    geometry_msgs::msg::PointStamped::SharedPtr latest_target_point_;
+    rclcpp::TimerBase::SharedPtr control_timer_;
+
     // System variables
     float pan_min, pan_max, tilt_min, tilt_max, dead_zone_threshold;
 
     float current_pan = 0.0;
     float current_tilt = 0.0;
-    float alpha = 0.5; // Smoothing factor for head movement
+    float alpha = 0.7;
 
     // Utility functions
 
@@ -115,16 +122,22 @@ private:
         current_tilt = static_cast<float>(msg->data[1]);
     }
 
-    void lookAtCallback(const geometry_msgs::msg::PointStamped::SharedPtr msg)
-    {
+    void lookAtCallback(const geometry_msgs::msg::PointStamped::SharedPtr msg){
+        latest_target_point_ = msg;
+    }
+
+    void control_cycle() {
+        if (!latest_target_point_) return;
+
         try {
             // 1. Transformar el punto al frame fijo del cuello (torso_lift_link o similar)
             geometry_msgs::msg::PointStamped p_neck;
-            tf_buffer_.transform(*msg, p_neck, neck_frame_);
+            tf_buffer_.transform(*latest_target_point_, p_neck, neck_frame_, tf2::durationFromSec(0.01));
 
             // 2. Obtener la posición de la CÁMARA respecto al cuello (OFFSET estático)
             // Esto nos dice dónde está el "ojo" respecto al eje de rotación.
-            geometry_msgs::msg::TransformStamped cam_tf = tf_buffer_.lookupTransform(neck_frame_, camera_frame_, tf2::TimePointZero);
+            geometry_msgs::msg::TransformStamped cam_tf = 
+                tf_buffer_.lookupTransform(neck_frame_, camera_frame_, tf2::TimePointZero);
             
             double off_x = cam_tf.transform.translation.x;
             double off_y = cam_tf.transform.translation.y;
@@ -168,7 +181,7 @@ private:
 
 
         } catch (tf2::TransformException &ex) {
-            RCLCPP_WARN(this->get_logger(), "Error: %s", ex.what());
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "TF wait: %s", ex.what());
         }
     }
 
