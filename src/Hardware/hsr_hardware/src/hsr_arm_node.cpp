@@ -141,6 +141,7 @@ private:
 
     if (!init_sent_once_) {
       publish_default_pose();
+      sendArmGoalTrajectory();
       init_sent_once_ = true;
       RCLCPP_WARN(this->get_logger(), "arm_node.-> Sent default pose after first controller_state.");
 

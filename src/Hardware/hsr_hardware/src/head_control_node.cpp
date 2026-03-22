@@ -99,6 +99,8 @@ private:
     float current_tilt = 0.0;
     float alpha = 0.85;
 
+    bool new_target_ = false;
+
     // Utility functions
 
     std::vector<float> clampHeadPose(float goalPan, float goalTilt)
@@ -124,10 +126,13 @@ private:
 
     void lookAtCallback(const geometry_msgs::msg::PointStamped::SharedPtr msg){
         latest_target_point_ = msg;
+        new_target_ = true;
     }
 
     void control_cycle() {
-        if (!latest_target_point_) return;
+        if (!new_target_ || !latest_target_point_) return;
+
+        new_target_ = false;  // Reset flag
 
         try {
             // 1. Transformar el punto al frame fijo del cuello (torso_lift_link o similar)

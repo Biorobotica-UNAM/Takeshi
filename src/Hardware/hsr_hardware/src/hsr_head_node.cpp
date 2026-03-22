@@ -95,7 +95,7 @@ private:
   float target_pan_;
   float target_tilt_;
   
-  bool initialized_{false};
+  bool init_sent_once_{false};
   bool moving_on_goal_{false};
   double goal_reached_threshold_ = 0.05;
 
@@ -105,10 +105,6 @@ private:
   void headStateCallback(
       const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
   {
-    if(!initialized_ && msg->actual.positions[0] == 0.0 && msg->actual.positions[1] == 0.0){
-      initialized_ = true;
-      sendHeadGoalTrajectory(0.0, 0.0, 1.0);
-    }
 
     // expected: positions.size() >= 2  (0:tilt, 1:pan)
     if (msg->actual.positions.size() >= 2) {
@@ -118,6 +114,11 @@ private:
       std_msgs::msg::Float64MultiArray arr;
       arr.data = {current_pan_, current_tilt_};
       pub_head_current_pose_->publish(arr);
+    }
+
+    if(!init_sent_once_){
+      init_sent_once_ = true;
+      sendHeadGoalTrajectory(0.0, 0.0, 1.0);
     }
 
   }
@@ -150,18 +151,18 @@ private:
   }
 
   void checkGoalReached() {
-      double error = std::hypot(target_pan_ - current_pan_, target_tilt_ - current_tilt_);
-      bool reached = (error < goal_reached_threshold_);
+    
+    if (!moving_on_goal_) return;
 
-      // Publicar el estado actual
-      std_msgs::msg::Bool msg;
-      msg.data = reached;
-      pub_head_goal_reached_->publish(msg);
+    double error = std::hypot(target_pan_ - current_pan_, target_tilt_ - current_tilt_);
+    bool reached = (error < goal_reached_threshold_);
+
+    std_msgs::msg::Bool msg;
+    msg.data = reached;
+    pub_head_goal_reached_->publish(msg);
 
       // SI no hemos llegado Y se supone que deberíamos estar moviéndonos:
       if (moving_on_goal_ && !reached) {
-          // Opcional: Podrías usar un contador para no re-enviar a 10Hz (el timer corre a 100ms)
-          // Pero ROS2 aguantará bien un re-envío cada 100ms si el error es grande.
           double time = std::max(0.2, error / max_speed); // Tiempo corto para ajustes finos
           sendHeadGoalTrajectory(target_pan_, target_tilt_, time);
       } 
