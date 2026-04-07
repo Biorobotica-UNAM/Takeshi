@@ -129,3 +129,6 @@
 	url = git@github.com:Biorobotica-UNAM/supervisor_execution.git
 	branch = dev/supervisor-execution
 
+[submodule "src/Executor/tasks_tools"]
+	path = src/Executor/tasks_tools
+	url = git@github.com:Biorobotica-UNAM/tasks_tools.git
