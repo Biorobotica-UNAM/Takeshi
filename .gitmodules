@@ -41,6 +41,7 @@
 [submodule "src/Manipulation/manipulation_planner"]
 	path = src/Manipulation/manipulation_planner
 	url = git@github.com:Biorobotica-UNAM/manipulation_planner.git
+	branch = dev/move_it
 
 
 ####    HRI    ####
