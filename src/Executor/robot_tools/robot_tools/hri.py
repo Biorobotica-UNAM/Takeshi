@@ -6,12 +6,12 @@ from .service_client_base import ServiceClientBase
 
 
 class HRI(ServiceClientBase):
-    def __init__(self, node):
+    def __init__(self, node, group):
         super().__init__(node)
 
-        self.talk_cli = node.create_client(Talk, '/talk')
-        self.listen_cli = node.create_client(Listen, '/listen')
-        self.follow_cli = node.create_client(SetBool, '/follow_person')
+        self.talk_cli = node.create_client(Talk, '/talk', callback_group=group)
+        self.listen_cli = node.create_client(Listen, '/listen', callback_group=group)
+        self.follow_cli = node.create_client(SetBool, '/follow_person', callback_group=group)
 
     def say(self, text: str) -> bool:
         req = Talk.Request()

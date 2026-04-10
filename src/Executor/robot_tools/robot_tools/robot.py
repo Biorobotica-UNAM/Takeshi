@@ -1,20 +1,23 @@
 #from rclpy.node import Node
+from rclpy.callback_groups import ReentrantCallbackGroup
 from .hardware import Hardware
 from .hri import HRI
 from .vision import Vision
 from .tasks import Tasks
 from .navigation import Navigation
 
+
 class Robot:
     def __init__(self, node):
         self.node = node
+        self.group = ReentrantCallbackGroup()
 
         # módulos
-        self.hri = HRI(node)
-        self.vision = Vision(node)
-        self.tasks = Tasks(node)
-        self.navigation = Navigation(node)
-        self.hardware = Hardware(node)
+        self.hri = HRI(node, self.group)
+        self.vision = Vision(node, self.group)
+        self.tasks = Tasks(node, self.group)
+        self.navigation = Navigation(node, self.group)
+        self.hardware = Hardware(node, self.group)
 
     # =========================
     # Shortcuts (opcional)

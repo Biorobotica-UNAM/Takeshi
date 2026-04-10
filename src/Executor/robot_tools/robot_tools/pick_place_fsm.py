@@ -1,8 +1,10 @@
 import rclpy
+from rclpy import node
 from rclpy.node import Node
 from enum import Enum, auto
 
 from robot_tools.robot import Robot
+from rclpy.executors import MultiThreadedExecutor
 
 
 # =========================================================
@@ -163,6 +165,11 @@ class PickAndPlaceFSM(Node):
 def main():
     rclpy.init()
     node = PickAndPlaceFSM()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin()
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
