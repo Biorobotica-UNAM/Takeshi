@@ -133,3 +133,9 @@
 [submodule "src/Executor/tasks_tools"]
 	path = src/Executor/tasks_tools
 	url = git@github.com:Biorobotica-UNAM/tasks_tools.git
+[submodule "src/Manipulation/manipulation_controller"]
+	path = src/Manipulation/manipulation_controller
+	url = git@github.com:Biorobotica-UNAM/manipulation_controller.git
+[submodule "src/Manipulation/move_it"]
+	path = src/Manipulation/move_it
+	url = git@github.com:Biorobotica-UNAM/move_it.git
