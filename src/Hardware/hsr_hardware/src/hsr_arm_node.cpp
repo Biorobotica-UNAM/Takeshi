@@ -169,6 +169,7 @@ private:
     torso_goal_pose_ = msg->data;
     msg_torso_received_ = true;
     RCLCPP_INFO(this->get_logger(), "arm_node.->Received torso goal pose.");
+    sendArmGoalTrajectory();
   }
 
   void timerCallback()
