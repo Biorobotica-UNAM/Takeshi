@@ -74,7 +74,7 @@ class RestaurantFSM:
 
         # --- ENTREGA (200 pts)  ---
         self.robot.go_to(label)
-        self.tasks.deliver_to_table(label)
+        self.tasks.deliver_to_table()
         
         return True
 

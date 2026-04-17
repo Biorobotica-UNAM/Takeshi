@@ -140,3 +140,4 @@ class RestaurantTasks(ServiceClientBase):
         """Navega y entrega."""
         self.robot.go_to(location_name)
         self.robot.say(self.dialogs["arrived_table"])
+        self.robot.say("Enjoy! Have a great day.")
