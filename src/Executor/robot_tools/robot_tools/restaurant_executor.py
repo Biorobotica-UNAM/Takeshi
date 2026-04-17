@@ -68,8 +68,6 @@ class RestaurantFSM:
         self.robot.go_to(self.locations['bar'])
         self.robot.say(self.tasks.dialogs["to_barman"].format(order))
 
-        # --- RECOGER OBJETOS (200 pts)  ---
-        self.tasks.prepare_for_bar_pickup()
         # Aquí se usa el ObjectFinderNode de C++
         found = self.robot.tasks.find_object(order)
         

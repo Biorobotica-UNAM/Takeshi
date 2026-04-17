@@ -140,12 +140,6 @@ class RestaurantTasks(ServiceClientBase):
     # Acciones de Hardware & Manipulación
     # =========================================================
 
-    def prepare_for_bar_pickup(self):
-        """Configura el robot para interactuar con el Barman."""
-        self.robot.hardware.move_head(0.0, -0.4) # Mirar a la barra
-        self.robot.hardware.move_torso(0.3)      # Altura estándar de barra
-        self.robot.hardware.open_gripper()       # Listo para recibir
-
     def deliver_to_table(self, location_name: str):
         """Navega y entrega."""
         self.robot.go_to(location_name)
