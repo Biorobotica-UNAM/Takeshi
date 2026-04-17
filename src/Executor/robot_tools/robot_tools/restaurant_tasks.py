@@ -96,13 +96,9 @@ class RestaurantTasks(ServiceClientBase):
         return res.success if res else False
 
     def find_waving_customer(self) -> bool:
-        """
-        Activa el PersonFinderNode para buscar gestos de llamado.
-        Equivalente a la categoría 'waving' en tu Find.cpp.
-        """
         self.robot.say(self.dialogs["start"])
-        # Llamamos a find_person_cli con Trigger para activar la FSM de waving
-        res = self.robot.find_waiving_client_call() 
+        # Asegúrate de usar la ruta correcta al cliente de servicio
+        res = self.robot.tasks.find_waiving_client_call() 
         return res.success if res else False
 
     def find_and_track_object(self, object_name: str):
@@ -144,6 +140,3 @@ class RestaurantTasks(ServiceClientBase):
         """Navega y entrega."""
         self.robot.go_to(location_name)
         self.robot.say(self.dialogs["arrived_table"])
-        self.robot.hardware.open_gripper()
-        time.sleep(1.0)
-        self.robot.hardware.relax_gripper()

@@ -71,13 +71,6 @@ class RestaurantFSM:
         # Aquí se usa el ObjectFinderNode de C++
         found = self.robot.tasks.find_object(order)
         
-        if found and found.success:
-            self.robot.hardware.close_gripper()
-            # Opcional: Colocar en bandeja para bono de +200 pts 
-            # self.tasks.place_on_tray() 
-        else:
-            # Si falla, el Barman puede entregarlo en la mano (-100 pts asistencia) 
-            self.robot.say("Barman, please hand me the object.")
 
         # --- ENTREGA (200 pts)  ---
         self.robot.go_to(label)
