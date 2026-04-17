@@ -1,5 +1,8 @@
 from std_msgs.msg import Float64, Float64MultiArray, Float32
 from std_srvs.srv import Trigger
+from rclpy.action import ActionClient
+from tmc_control_msgs.action import GripperApplyEffort
+import time
 
 from .service_client_base import ServiceClientBase
 
@@ -11,11 +14,6 @@ class Hardware(ServiceClientBase):
         # =========================
         # Publishers
         # =========================
-        self.pub_goal_gripper = node.create_publisher(
-            Float64,
-            '/hardware/arms/goal_gripper',
-            10
-        )
 
         self.pub_head_angles = node.create_publisher(
             Float64MultiArray,
@@ -25,7 +23,7 @@ class Hardware(ServiceClientBase):
 
         self.pub_torso_target = node.create_publisher(
             Float32,
-            '/hardware/torso/goal',
+            '/hardware/torso/goal_pose',
             10
         )
 
@@ -46,24 +44,6 @@ class Hardware(ServiceClientBase):
             Trigger,
             '/hardware/pointing/disable'
         )
-
-    # =========================================================
-    # Gripper
-    # =========================================================
-    def open_gripper(self):
-        msg = Float64()
-        msg.data = -0.5236
-        self.pub_goal_gripper.publish(msg)
-
-    def close_gripper(self):
-        msg = Float64()
-        msg.data = 0.2618
-        self.pub_goal_gripper.publish(msg)
-
-    def relax_gripper(self):
-        msg = Float64()
-        msg.data = 0.0
-        self.pub_goal_gripper.publish(msg)
 
     # =========================================================
     # Head
@@ -159,3 +139,34 @@ class Hardware(ServiceClientBase):
             return False
 
         return bool(res.success)
+    
+
+
+class Gripper(ServiceClientBase):
+    def __init__(self, node):
+        super().__init__(node)
+        self._action_client = ActionClient(
+            self.node, 
+            GripperApplyEffort, 
+            '/gripper_controller/grasp'
+        )
+
+    def _manage_gripper(self, effort: float):
+        time.sleep(1.0)
+        
+        goal = GripperApplyEffort.Goal()
+        goal.effort = effort
+        goal.do_control_stop = True
+
+        # Usamos el nuevo placeholder de la base
+        result = self.call_action(self._action_client, goal, "GripperGrasp")
+        
+        if result and result.status == 4: # STATUS_SUCCEEDED
+            return True
+        return False
+
+    def open(self):
+        return self._manage_gripper(-0.1)
+
+    def close(self):
+        return self._manage_gripper(0.1)

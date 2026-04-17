@@ -1,6 +1,6 @@
 #from rclpy.node import Node
 from rclpy.callback_groups import ReentrantCallbackGroup
-from .hardware import Hardware
+from .hardware import Hardware, Gripper
 from .hri import HRI
 from .vision import Vision
 from .tasks import Tasks
@@ -18,6 +18,7 @@ class Robot:
         self.tasks = Tasks(node, self.group)
         self.navigation = Navigation(node, self.group)
         self.hardware = Hardware(node, self.group)
+        self.gripper = Gripper(node, self.group)
 
     # =========================
     # Shortcuts (opcional)
@@ -39,4 +40,9 @@ class Robot:
     
     def check_door_opened(self):
         return self.hardware.check_door()
+    
+    def find_waiving_client_call(self):
+        return self.vision.find_people()
+    
+
     

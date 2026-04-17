@@ -102,7 +102,7 @@ class RestaurantTasks(ServiceClientBase):
         """
         self.robot.say(self.dialogs["start"])
         # Llamamos a find_person_cli con Trigger para activar la FSM de waving
-        res = self.robot.tasks.find_waiving_client_call() 
+        res = self.robot.find_waiving_client_call() 
         return res.success if res else False
 
     def find_and_track_object(self, object_name: str):

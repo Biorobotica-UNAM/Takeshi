@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.action import ActionClient
 
 
 class ServiceClientBase:
@@ -41,3 +42,30 @@ class ServiceClientBase:
             return None
 
         return result
+    
+    def call_action(
+        self,
+        client: ActionClient,
+        goal_msg,
+        action_name: str,
+        wait_timeout: float = 2.0,
+    ):
+        if not client.wait_for_server(timeout_sec=wait_timeout):
+            self.node.get_logger().error(f'Acción no disponible: {action_name}')
+            return None
+
+        # 1. Enviar el goal
+        self.node.get_logger().info(f'Enviando meta a acción: {action_name}')
+        send_goal_future = client.send_goal_async(goal_msg)
+        rclpy.spin_until_future_complete(self.node, send_goal_future)
+
+        goal_handle = send_goal_future.result()
+        if not goal_handle or not goal_handle.accepted:
+            self.node.get_logger().error(f'Meta rechazada por: {action_name}')
+            return None
+
+        # 2. Obtener el resultado
+        result_future = goal_handle.get_result_async()
+        rclpy.spin_until_future_complete(self.node, result_future)
+
+        return result_future.result()
