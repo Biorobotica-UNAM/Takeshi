@@ -20,6 +20,8 @@ setup(
     entry_points={
         'console_scripts': [
             'pnp = robot_tools.pick_place_fsm:main',
+            'ejecutor_restaurant = robot_tools.restaurant_executor:main',
         ],
     },
+    
 )
