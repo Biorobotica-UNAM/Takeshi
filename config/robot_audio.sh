@@ -1,5 +1,5 @@
 #!/bin/bash
-PC_IP="169.254.11.200"
+PC_IP="169.254.11.210"
 ROBOT_IP="169.254.11.192"
 ROBOT_USER="administrator"
 ROBOT_PASS="password"
