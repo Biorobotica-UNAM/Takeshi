@@ -98,7 +98,7 @@ class RestaurantTasks(ServiceClientBase):
     def find_waving_customer(self) -> bool:
         self.robot.say(self.dialogs["start"])
         # Asegúrate de usar la ruta correcta al cliente de servicio
-        res = self.robot.tasks.find_waiving_client_call() 
+        res = self.robot.find_waiving_client_call() 
         return res.success if res else False
 
     def find_and_track_object(self, object_name: str):
@@ -106,7 +106,7 @@ class RestaurantTasks(ServiceClientBase):
         Utiliza el ObjectFinderNode (tu FSM de C++) para localizar 
         un objeto y que la cabeza lo siga (LookAtTarget).
         """
-        return self.robot.tasks.find_object(object_name)
+        return self.robot.find_object(object_name)
 
     # =========================================================
     # Acciones de HRI (Basadas en tu plan CLIPS)

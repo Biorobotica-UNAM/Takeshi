@@ -6,12 +6,12 @@ from .service_client_base import ServiceClientBase
 
 
 class Tasks(ServiceClientBase):
-    def __init__(self, node):
+    def __init__(self, node, callback_group=None):
         super().__init__(node)
 
-        self.find_object_cli = node.create_client(FindObject, '/tasks/find_object')
-        self.find_person_cli = node.create_client(FaceRecog, '/tasks/find_person')
-        self.find_seat_cli   = node.create_client(Trigger, '/tasks/find_seat')
+        self.find_object_cli = node.create_client(FindObject, '/tasks/find_object', callback_group=callback_group)
+        self.find_person_cli = node.create_client(FaceRecog, '/tasks/find_person', callback_group=callback_group)
+        self.find_seat_cli   = node.create_client(Trigger, '/tasks/find_seat', callback_group=callback_group)
 
     # ---------------------------------------------------------
     # FindObject

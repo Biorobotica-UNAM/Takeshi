@@ -8,7 +8,7 @@ from .service_client_base import ServiceClientBase
 
 
 class Hardware(ServiceClientBase):
-    def __init__(self, node):
+    def __init__(self, node, callback_group=None):
         super().__init__(node)
 
         # =========================
@@ -18,13 +18,13 @@ class Hardware(ServiceClientBase):
         self.pub_head_angles = node.create_publisher(
             Float64MultiArray,
             '/hardware/head/goal_pose',
-            10
+            10, callback_group=callback_group
         )
 
         self.pub_torso_target = node.create_publisher(
             Float32,
             '/hardware/torso/goal_pose',
-            10
+            10, callback_group=callback_group
         )
 
         # =========================
@@ -32,17 +32,17 @@ class Hardware(ServiceClientBase):
         # =========================
         self.cli_check_door = node.create_client(
             Trigger,
-            '/hardware/door_detector/check'
+            '/hardware/door_detector/check', callback_group=callback_group
         )
 
         self.cli_pointing_motion_enable = node.create_client(
             Trigger,
-            '/hardware/pointing/enable'
+            '/hardware/pointing/enable', callback_group=callback_group
         )
 
         self.cli_pointing_motion_disable = node.create_client(
             Trigger,
-            '/hardware/pointing/disable'
+            '/hardware/pointing/disable', callback_group=callback_group
         )
 
     # =========================================================
@@ -143,12 +143,12 @@ class Hardware(ServiceClientBase):
 
 
 class Gripper(ServiceClientBase):
-    def __init__(self, node):
+    def __init__(self, node, callback_group=None):
         super().__init__(node)
         self._action_client = ActionClient(
             self.node, 
             GripperApplyEffort, 
-            '/gripper_controller/grasp'
+            '/gripper_controller/grasp', callback_group=callback_group
         )
 
     def _manage_gripper(self, effort: float):

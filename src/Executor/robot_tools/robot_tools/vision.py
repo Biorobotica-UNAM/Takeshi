@@ -4,12 +4,12 @@ from std_srvs.srv import SetBool
 from .service_client_base import ServiceClientBase
 
 class Vision(ServiceClientBase):
-    def __init__(self, node):
+    def __init__(self, node, callback_group=None):
         super().__init__(node)
 
-        self.find_waving_people_action = node.create_client(DetectPointing, '/tasks/find_waving_human')
-        self.focus_action = node.create_client(SetBool, '/vision/focus')
-    
+        self.find_waving_people_action = node.create_client(DetectPointing, '/tasks/find_waving_human', callback_group=callback_group)
+        self.focus_action = node.create_client(SetBool, '/vision/focus', callback_group=callback_group)
+
     def find_people(self) -> bool:
         req = DetectPointing.Request()
 

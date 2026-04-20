@@ -24,7 +24,7 @@ class RestaurantFSM:
 
         # 1. Fase Inicial: Guardar ubicación de la barra
         self.tasks.save_location(self.locations['bar'])
-        self.robot.say(self.tasks.dialogs["start"])
+        #self.robot.say(self.tasks.dialogs["start"])
 
         # 2. Ciclo de Clientes (Se requieren al menos 2 )
         for i in range(1, 3):

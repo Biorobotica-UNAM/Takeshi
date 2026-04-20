@@ -4,12 +4,12 @@ from .service_client_base import ServiceClientBase
 
 
 class Navigation(ServiceClientBase):
-    def __init__(self, node):
+    def __init__(self, node, callback_group=None):
         super().__init__(node)
 
         self.go_to_cli = node.create_client(
             LocationsGet,
-            '/nav_controller/go_to_location'
+            '/nav_controller/go_to_location', callback_group=callback_group
         )
 
     # ---------------------------------------------------------
