@@ -109,6 +109,10 @@
 	path = src/Executor/executor_remake
 	url = git@github.com:Biorobotica-UNAM/executor_remake.git
 	branch = main
+[submodule "src/Executor/executor_tools"]
+	path = src/Executor/executor_tools
+	url = git@github.com:Biorobotica-UNAM/executor_tools.git
+	branch = dev/new_tools
 
 ####	Supervisor    ####
 [submodule "src/Supervisor/surge_et_ambula"]
