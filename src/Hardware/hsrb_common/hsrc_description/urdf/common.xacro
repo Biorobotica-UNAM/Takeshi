@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:arg name="ignition_gazebo_sim" default="False" />
+  <xacro:arg name="implicit_damping" default="false" />
+
+  <xacro:macro name="hsrb_position_joint_transmission" params="joint reduction">
+     <transmission name="${joint}_transmission">
+       <type>transmission_interface/SimpleTransmission</type>
+       <joint name="${joint}">
+         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+       </joint>
+       <actuator name="${joint}_actuator">
+         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+         <mechanicalReduction>${reduction}</mechanicalReduction>
+       </actuator>
+     </transmission>
+  </xacro:macro>
+
+  <xacro:macro name="hsrb_effort_joint_transmission" params="joint reduction">
+     <transmission name="${joint}_transmission">
+       <type>transmission_interface/SimpleTransmission</type>
+       <joint name="${joint}">
+         <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+       </joint>
+       <actuator name="${joint}_actuator">
+         <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+         <mechanicalReduction>${reduction}</mechanicalReduction>
+       </actuator>
+     </transmission>
+  </xacro:macro>
+
+  <xacro:macro name="hsrb_velocity_joint_transmission" params="joint reduction">
+      <transmission name="${prefix}_transmission">
+          <type>transmission_interface/SimpleTransmission</type>
+          <joint name="${joint}">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+          </joint>
+          <actuator name="${joint}_actuator">
+              <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+              <mechanicalReduction>${reduction}</mechanicalReduction>
+          </actuator>
+      </transmission>
+  </xacro:macro>
+
+  <xacro:macro name="gazebo_link" params="name gravity collide friction">
+    <gazebo reference="${name}">
+      <selfCollide>${collide}</selfCollide>
+      <gravity>${gravity}</gravity>
+      <mu1>${friction}</mu1>
+      <mu2>${friction}</mu2>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="gazebo_link_flat_black" params="name gravity collide friction">
+    <gazebo reference="${name}">
+      <selfCollide>${collide}</selfCollide>
+      <gravity>${gravity}</gravity>
+      <mu1>${friction}</mu1>
+      <mu2>${friction}</mu2>
+      <material value="Gazebo/FlatBlack"/>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="gazebo_link_caster" params="name">
+    <gazebo reference="${name}">
+      <selfCollide>false</selfCollide>
+      <gravity>true</gravity>
+      <mu1>0.1</mu1>
+      <mu2>0.1</mu2>
+      <maxVel>1.0</maxVel>
+      <material value="Gazebo/FlatBlack"/>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="gazebo_link_rubber" params="name">
+    <gazebo reference="${name}">
+      <selfCollide>false</selfCollide>
+      <gravity>true</gravity>
+      <turnGravityOff>false</turnGravityOff>
+      <kp>1000000.0</kp>
+      <kd>10.0</kd>
+      <mu1>1.0</mu1>
+      <mu2>1.0</mu2>
+      <maxVel>1.0</maxVel>
+      <minDepth>0.00</minDepth>
+      <material value="Gazebo/FlatBlack"/>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="gazebo_link_bumper" params="name robot_namespace gravity collide friction">
+    <gazebo reference="${name}_link">
+      <selfCollide>${collide}</selfCollide>
+      <gravity>${gravity}</gravity>
+      <mu1>${friction}</mu1>
+      <mu2>${friction}</mu2>
+      <xacro:if value="$(arg ignition_gazebo_sim)">
+        <sensor name="${name}_contact" type="contact">
+          <always_on>true</always_on>
+          <update_rate>10</update_rate>
+          <contact>
+            <collision>${name}_link_collision</collision>
+          </contact>
+        </sensor>
+      </xacro:if>
+      <xacro:unless value="$(arg ignition_gazebo_sim)">
+        <sensor name="${name}_contact" type="contact">
+          <always_on>true</always_on>
+          <update_rate>10</update_rate>
+          <contact>
+            <collision>${name}_link_collision</collision>
+          </contact>
+          <plugin name="${name}_bumper_controller" filename="libtmc_gazebo_ros_bumper.so">
+            <ros>
+              <namespace>${robot_namespace}</namespace>
+              <remapping>bumper_states:=${name}_sensor</remapping>
+            </ros>
+          </plugin>
+        </sensor>
+      </xacro:unless>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="gazebo_joint" params="name">
+    <gazebo reference="${name}">
+      <xacro:if value="$(arg implicit_damping)">
+        <implicitSpringDamper>1</implicitSpringDamper>
+      </xacro:if>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="gazebo_joint_mimic" params="name">
+    <gazebo reference="${name}">
+    </gazebo>
+  </xacro:macro>
+
+</robot>
