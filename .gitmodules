@@ -55,24 +55,8 @@
 	path = src/Manipulation/manipulation_tools
 	url = git@github.com:Biorobotica-UNAM/manipulation_tools.git
 	branch = main
-[submodule "src/Manipulation/manipulation_planner"]
-	path = src/Manipulation/manipulation_planner
-	url = git@github.com:Biorobotica-UNAM/manipulation_planner.git
-	branch = main
-[submodule "src/Manipulation/manipulation_controller"]
-	path = src/Manipulation/manipulation_controller
-	url = git@github.com:Biorobotica-UNAM/manipulation_controller.git
-	branch = main
-[submodule "src/Manipulation/move_it"]
-	path = src/Manipulation/move_it
-	url = git@github.com:Biorobotica-UNAM/move_it.git
-	branch = main
-[submodule "src/Manipulation/trac_ik"]
-	path = src/Manipulation/trac_ik
-	url = git@github.com:Biorobotica-UNAM/trac_ik.git
-	branch = jazzy
 
-####    HRI    ####
+####	HRI    ####
 [submodule "src/HRI/hri_tools"]
 	path = src/HRI/hri_tools
 	url = git@github.com:Biorobotica-UNAM/hri_tools.git
