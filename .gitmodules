@@ -111,10 +111,17 @@
 	branch = main
 
 ####     Executor      ####
-
+[submodule "src/Executor/executor_remake"]
+	path = src/Executor/executor_remake
+	url = git@github.com:Biorobotica-UNAM/executor_remake.git
+	branch = main
 
 ####	Supervisor    ####
 [submodule "src/Supervisor/surge_et_ambula"]
 	path = src/Supervisor/surge_et_ambula
 	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
 	branch = dev/nav-launch
+[submodule "src/Supervisor/supervisor_remake"]
+	path = src/Supervisor/supervisor_remake
+	url = git@github.com:Biorobotica-UNAM/supervisor_remake.git
+	branch = main
