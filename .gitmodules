@@ -45,12 +45,6 @@
 	path = src/Navigation/navigation_planner
 	url = git@github.com:Biorobotica-UNAM/navigation_planner.git
 	branch = dev_nav-pumas-tid
-[submodule "src/Navigation/mapless_navigation"]
-	path = src/Navigation/mapless_navigation
-	url = git@github.com:Biorobotica-UNAM/mapless_navigation.git
-	branch = main
-
-####    Manipulation    ####
 [submodule "src/Manipulation/manipulation_tools"]
 	path = src/Manipulation/manipulation_tools
 	url = git@github.com:Biorobotica-UNAM/manipulation_tools.git
