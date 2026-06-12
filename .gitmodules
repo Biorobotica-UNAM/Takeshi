@@ -40,7 +40,7 @@
 [submodule "src/Navigation/navigation_controller"]
 	path = src/Navigation/navigation_controller
 	url = git@github.com:Biorobotica-UNAM/navigation_controller.git
-	branch = main
+	branch = dev_nav-pumas-tid
 [submodule "src/Navigation/navigation_planner"]
 	path = src/Navigation/navigation_planner
 	url = git@github.com:Biorobotica-UNAM/navigation_planner.git
