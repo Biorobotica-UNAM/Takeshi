@@ -40,7 +40,7 @@
 [submodule "src/Navigation/navigation_controller"]
 	path = src/Navigation/navigation_controller
 	url = git@github.com:Biorobotica-UNAM/navigation_controller.git
-	branch = main
+	branch = dev_nav-pumas-tid
 [submodule "src/Navigation/navigation_planner"]
 	path = src/Navigation/navigation_planner
 	url = git@github.com:Biorobotica-UNAM/navigation_planner.git
@@ -145,3 +145,6 @@
 	path = src/Supervisor/surge_et_ambula
 	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
 	branch = dev/nav-launch
+[submodule "src/Vision/vacancy_detector"]
+	path = src/Vision/vacancy_detector
+	url = git@github.com:Biorobotica-UNAM/vacancy_detector.git
