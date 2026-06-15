@@ -55,7 +55,7 @@
     <!-- Import ros2_control description -->
     <xacro:if value="${not $(arg gazebo_sim) and not $(arg ignition_gazebo_sim) and not $(arg rviz_sim)}">
       <xacro:include filename="$(find hsrc_description)/urdf/ros2_control.robot.xacro" />
-      <xacro:ros2_contorl_robot/>
+      <xacro:ros2_control_robot/>
     </xacro:if>
 
     <xacro:if value="$(arg gazebo_sim)">
@@ -65,11 +65,11 @@
 
     <xacro:if value="$(arg ignition_gazebo_sim)">
       <xacro:include filename="$(find hsrb_description)/urdf/ros2_control.ignition_gazebo.xacro" />
-      <xacro:ros2_contorl_gazebo/>
+      <xacro:ros2_control_gazebo robot_name="hsrc"/>
     </xacro:if>
 
     <xacro:if value="$(arg rviz_sim)">
       <xacro:include filename="$(find hsrb_description)/urdf/ros2_control.rviz.xacro" />
-      <xacro:ros2_contorl_rviz/>
+      <xacro:ros2_control_rviz/>
     </xacro:if>
 </robot>

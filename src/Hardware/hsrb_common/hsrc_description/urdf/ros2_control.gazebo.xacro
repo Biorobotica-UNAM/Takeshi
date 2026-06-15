@@ -17,7 +17,7 @@
         <error_tolerance>0.0872</error_tolerance>
         <stall_timeout>2.0</stall_timeout>
         <robot_namespace>${personal_name}/${robot_name}</robot_namespace>
-        <pid_params>
+        <parameters>
           <hand_l_proximal_joint p="50.0" d="20.0"/>
           <hand_l_spring_proximal_joint p="50.0" d="20.0"/>
           <hand_l_mimic_distal_joint p="20.0" d="8.0"/>
@@ -26,7 +26,7 @@
           <hand_r_spring_proximal_joint p="50.0" d="20.0"/>
           <hand_r_mimic_distal_joint p="20.0" d="8.0"/>
           <hand_r_distal_joint p="20.0" d="8.0"/>
-        </pid_params>
+        </parameters>
       </plugin>
       <plugin name="grasp_hack_plugin" filename="libtmc_gazebo_grasp_hack_hrh_gripper.so">
         <grasp_check>

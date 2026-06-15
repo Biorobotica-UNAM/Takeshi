@@ -1,3 +1,0 @@
-tmc_control_msgs/JointExxxDriveMode drive_mode_request
----
-bool success

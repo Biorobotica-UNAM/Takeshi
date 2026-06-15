@@ -239,6 +239,10 @@
             <origin xyz="0.167 0.0 0.1904" rpy="0.0 0.0 0.0" />
         </xacro:hokuyo_laser>
 
+        <xacro:imu_sensor prefix="${prefix}" robot_namespace="${robot_namespace}" parent="${prefix}_link" topic_name="data">
+            <origin xyz="0.0005 0.1296 0.181" rpy="0.0 0.0 0.0" />
+        </xacro:imu_sensor>
+
         <!-- bumper -->
         <xacro:hsrb_bumper prefix="${prefix}" suffix="f" parent="${prefix}_link">
             <origin

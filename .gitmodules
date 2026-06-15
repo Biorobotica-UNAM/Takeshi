@@ -9,11 +9,23 @@
 	path = src/Knowledge/knowledge_bank
 	url = git@github.com:Biorobotica-UNAM/knowledge_bank.git
 	branch = main
+[submodule "src/Knowledge/knowledge_manager"]
+	path = src/Knowledge/knowledge_manager
+	url = git@github.com:Biorobotica-UNAM/knowledge_manager.git
+	branch = main
+[submodule "src/Knowledge/knowledge_tools"]
+	path = src/Knowledge/knowledge_tools
+	url = git@github.com:Biorobotica-UNAM/knowledge_tools.git
+	branch = main
 
 ####    Hardware    ####
 [submodule "src/Hardware/hardware_tools"]
 	path = src/Hardware/hardware_tools
 	url = git@github.com:Biorobotica-UNAM/hardware_tools.git
+	branch = main
+[submodule "src/Hardware/scanner"]
+	path = src/Hardware/scanner
+	url = git@github.com:Biorobotica-UNAM/scanner.git
 	branch = main
 [submodule "src/Hardware/door_detector"]
 	path = src/Hardware/door_detector
@@ -28,22 +40,23 @@
 [submodule "src/Navigation/navigation_controller"]
 	path = src/Navigation/navigation_controller
 	url = git@github.com:Biorobotica-UNAM/navigation_controller.git
-	branch = main
+	branch = dev_nav-pumas-tid
 [submodule "src/Navigation/navigation_planner"]
 	path = src/Navigation/navigation_planner
 	url = git@github.com:Biorobotica-UNAM/navigation_planner.git
+	branch = dev_nav-pumas-tid
+[submodule "src/Navigation/mapless_navigation"]
+	path = src/Navigation/mapless_navigation
+	url = git@github.com:Biorobotica-UNAM/mapless_navigation.git
 	branch = main
 
 ####    Manipulation    ####
 [submodule "src/Manipulation/manipulation_tools"]
 	path = src/Manipulation/manipulation_tools
 	url = git@github.com:Biorobotica-UNAM/manipulation_tools.git
-[submodule "src/Manipulation/manipulation_planner"]
-	path = src/Manipulation/manipulation_planner
-	url = git@github.com:Biorobotica-UNAM/manipulation_planner.git
+	branch = main
 
-
-####    HRI    ####
+####	HRI    ####
 [submodule "src/HRI/hri_tools"]
 	path = src/HRI/hri_tools
 	url = git@github.com:Biorobotica-UNAM/hri_tools.git
@@ -51,6 +64,10 @@
 [submodule "src/HRI/listener"]
 	path = src/HRI/listener
 	url = git@github.com:Biorobotica-UNAM/listener.git
+	branch = main
+[submodule "src/HRI/talker"]
+	path = src/HRI/talker
+	url = git@github.com:Biorobotica-UNAM/talker.git
 	branch = main
 [submodule "src/HRI/human_detector"]
 	path = src/HRI/human_detector
@@ -60,7 +77,7 @@
 	path = src/HRI/human_follower
 	url = git@github.com:Biorobotica-UNAM/human_follower.git
 	branch = main
-	
+
 ####    Vision    ####
 [submodule "src/Vision/face_recognizer"]
 	path = src/Vision/face_recognizer
@@ -69,6 +86,14 @@
 [submodule "src/Vision/object_recognizer"]
 	path = src/Vision/object_recognizer
 	url = git@github.com:Biorobotica-UNAM/object_recognizer.git
+	branch = main
+[submodule "src/Vision/vision_tools"]
+	path = src/Vision/vision_tools
+	url = git@github.com:Biorobotica-UNAM/vision_tools.git
+	branch = main
+[submodule "src/Vision/table_alignment"]
+	path = src/Vision/table_alignment
+	url = git@github.com:Biorobotica-UNAM/table_alignment.git
 	branch = main
 
 ####    Planning    ####
@@ -98,10 +123,6 @@
 	path = src/Executor/executor_manager
 	url = git@github.com:Biorobotica-UNAM/executor_manager.git
 	branch = main
-[submodule "src/Supervisor/surge_et_ambula"]
-	path = src/Supervisor/surge_et_ambula
-	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
-	branch = main
 
 ####    Supervisor    ####
 [submodule "src/Supervisor/supervisor_manager"]
@@ -120,3 +141,10 @@
 	path = src/Supervisor/supervisor_execution
 	url = git@github.com:Biorobotica-UNAM/supervisor_execution.git
 	branch = main
+[submodule "src/Supervisor/surge_et_ambula"]
+	path = src/Supervisor/surge_et_ambula
+	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
+	branch = dev/nav-launch
+[submodule "src/Vision/vacancy_detector"]
+	path = src/Vision/vacancy_detector
+	url = git@github.com:Biorobotica-UNAM/vacancy_detector.git
