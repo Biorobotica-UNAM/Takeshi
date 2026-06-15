@@ -1,3 +1,12 @@
+#include <algorithm>
+#include <atomic>
+#include <future>
+#include <memory>
+#include <chrono>
+#include <cmath>
+#include <mutex>
+#include <thread>
+
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/executors/multi_threaded_executor.hpp>
 
@@ -7,9 +16,9 @@
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
 #include <trajectory_msgs/msg/joint_trajectory_point.hpp>
 #include <control_msgs/msg/joint_trajectory_controller_state.hpp>
+#include "head_interfaces/srv/move_head.hpp"
 
 #include <string>
-#include <cmath>
 
 class HeadController : public rclcpp::Node
 {
@@ -54,10 +63,23 @@ public:
       head_goal_reached_topic_, 
       rclcpp::QoS(10).reliable());
 
+    service_cb_group_ = this->create_callback_group(
+      rclcpp::CallbackGroupType::MutuallyExclusive);
+
+    srv_move_ = this->create_service<head_interfaces::srv::MoveHead>(
+      "/hardware/head/move_head",
+      std::bind(&HeadController::move_service, this, std::placeholders::_1, std::placeholders::_2),
+      rmw_qos_profile_services_default,
+      service_cb_group_);
+
     // Subscribers
+    rclcpp::SubscriptionOptions sub_options;
+    sub_options.callback_group = service_cb_group_;
+
     sub_head_goal_pose_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
       head_goal_topic_, rclcpp::QoS(10).reliable(),
-      std::bind(&HeadController::headGoalPoseCallback, this, std::placeholders::_1));
+      std::bind(&HeadController::headGoalPoseCallback, this, std::placeholders::_1),
+      sub_options);
 
     sub_head_state_ = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>(
       head_state_topic_, rclcpp::QoS(10).reliable(),
@@ -84,6 +106,9 @@ private:
   rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr  pub_head_goal_traj_;
   rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr       pub_head_current_pose_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr                    pub_head_goal_reached_;
+
+  rclcpp::Service<head_interfaces::srv::MoveHead>::SharedPtr           srv_move_;
+  rclcpp::CallbackGroup::SharedPtr                                    service_cb_group_;
 
   rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr    sub_head_goal_pose_;
   rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr sub_head_state_;
@@ -148,6 +173,31 @@ private:
     //goal_received_ = true;
 
     sendHeadGoalTrajectory(target_pan_, target_tilt_, time);
+  }
+
+  void move_service(
+      const std::shared_ptr<head_interfaces::srv::MoveHead::Request> request,
+      std::shared_ptr<head_interfaces::srv::MoveHead::Response> response)
+  {
+    if (request->positions.size() != 2) {
+      response->success = false;
+      response->message = "Head goal must be 2 values [pan, tilt]";
+      return;
+    }
+
+    double pan = request->positions[0];
+    double tilt = request->positions[1];
+
+    target_pan_ = std::clamp(pan, pan_min_, pan_max_);
+    target_tilt_ = std::clamp(tilt, tilt_min_, tilt_max_);
+
+    moving_on_goal_ = true;
+    double error = std::hypot(target_pan_ - current_pan_, target_tilt_ - current_tilt_);
+    double time = std::max(0.5, error / max_speed);
+    sendHeadGoalTrajectory(target_pan_, target_tilt_, time);
+
+    response->success = true;
+    response->message = "Goal accepted";
   }
 
   void checkGoalReached() {

@@ -144,7 +144,7 @@
 [submodule "src/Supervisor/surge_et_ambula"]
 	path = src/Supervisor/surge_et_ambula
 	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
-	branch = dev/nav-launch
+	branch = main
 [submodule "src/Vision/vacancy_detector"]
 	path = src/Vision/vacancy_detector
 	url = git@github.com:Biorobotica-UNAM/vacancy_detector.git

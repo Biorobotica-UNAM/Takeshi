@@ -20,6 +20,7 @@ find_package(tmc_control_msgs REQUIRED)
 find_package(tmc_voice_msgs REQUIRED)
 find_package(talker_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(head_interfaces REQUIRED)
 
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -52,6 +53,7 @@ ament_target_dependencies(hsr_head_node
   std_msgs
   trajectory_msgs
   control_msgs
+  head_interfaces
 )
 
 #ament_target_dependencies(hsr_gripper_node
