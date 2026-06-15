@@ -89,6 +89,10 @@
 	path = src/Vision/table_alignment
 	url = git@github.com:Biorobotica-UNAM/table_alignment.git
 	branch = main
+[submodule "src/Vision/vacancy_detector"]
+	path = src/Vision/vacancy_detector
+	url = git@github.com:Biorobotica-UNAM/vacancy_detector.git
+	branch = main
 
 ####    Planning    ####
 [submodule "src/Planning/planning_tools"]
