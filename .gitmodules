@@ -40,11 +40,11 @@
 [submodule "src/Navigation/navigation_controller"]
 	path = src/Navigation/navigation_controller
 	url = git@github.com:Biorobotica-UNAM/navigation_controller.git
-	branch = dev_nav-pumas-tid
+	branch = main
 [submodule "src/Navigation/navigation_planner"]
 	path = src/Navigation/navigation_planner
 	url = git@github.com:Biorobotica-UNAM/navigation_planner.git
-	branch = dev_nav-pumas-tid
+	branch = main
 [submodule "src/Navigation/mapless_navigation"]
 	path = src/Navigation/mapless_navigation
 	url = git@github.com:Biorobotica-UNAM/mapless_navigation.git
@@ -95,6 +95,10 @@
 	path = src/Vision/table_alignment
 	url = git@github.com:Biorobotica-UNAM/table_alignment.git
 	branch = main
+[submodule "src/Vision/vacancy_detector"]
+	path = src/Vision/vacancy_detector
+	url = git@github.com:Biorobotica-UNAM/vacancy_detector.git
+	branch = main
 
 ####    Planning    ####
 [submodule "src/Planning/planning_tools"]
@@ -144,7 +148,4 @@
 [submodule "src/Supervisor/surge_et_ambula"]
 	path = src/Supervisor/surge_et_ambula
 	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
-	branch = dev/nav-launch
-[submodule "src/Vision/vacancy_detector"]
-	path = src/Vision/vacancy_detector
-	url = git@github.com:Biorobotica-UNAM/vacancy_detector.git
+	branch = main
