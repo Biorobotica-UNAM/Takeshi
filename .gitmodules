@@ -8,7 +8,7 @@
 [submodule "src/Knowledge/knowledge_bank"]
 	path = src/Knowledge/knowledge_bank
 	url = git@github.com:Biorobotica-UNAM/knowledge_bank.git
-	branch = main
+	branch = dev
 [submodule "src/Knowledge/knowledge_manager"]
 	path = src/Knowledge/knowledge_manager
 	url = git@github.com:Biorobotica-UNAM/knowledge_manager.git
