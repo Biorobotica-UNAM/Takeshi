@@ -54,7 +54,7 @@
 [submodule "src/Manipulation/manipulation_tools"]
 	path = src/Manipulation/manipulation_tools
 	url = git@github.com:Biorobotica-UNAM/manipulation_tools.git
-	branch = main
+	branch = dev_grab_and_pinch
 
 ####	HRI    ####
 [submodule "src/HRI/hri_tools"]
@@ -72,7 +72,7 @@
 [submodule "src/HRI/human_detector"]
 	path = src/HRI/human_detector
 	url = git@github.com:Biorobotica-UNAM/human_detector.git
-	branch = main
+	branch = dev/debugger
 [submodule "src/HRI/human_follower"]
 	path = src/HRI/human_follower
 	url = git@github.com:Biorobotica-UNAM/human_follower.git
@@ -86,7 +86,7 @@
 [submodule "src/Vision/object_recognizer"]
 	path = src/Vision/object_recognizer
 	url = git@github.com:Biorobotica-UNAM/object_recognizer.git
-	branch = main
+	branch = Analize
 [submodule "src/Vision/vision_tools"]
 	path = src/Vision/vision_tools
 	url = git@github.com:Biorobotica-UNAM/vision_tools.git
@@ -94,6 +94,10 @@
 [submodule "src/Vision/table_alignment"]
 	path = src/Vision/table_alignment
 	url = git@github.com:Biorobotica-UNAM/table_alignment.git
+	branch = main
+[submodule "src/Vision/vacancy_detector"]
+	path = src/Vision/vacancy_detector
+	url = git@github.com:Biorobotica-UNAM/vacancy_detector.git
 	branch = main
 
 ####    Planning    ####
@@ -145,6 +149,3 @@
 	path = src/Supervisor/surge_et_ambula
 	url = git@github.com:Biorobotica-UNAM/surge_et_ambula.git
 	branch = main
-[submodule "src/Vision/vacancy_detector"]
-	path = src/Vision/vacancy_detector
-	url = git@github.com:Biorobotica-UNAM/vacancy_detector.git
