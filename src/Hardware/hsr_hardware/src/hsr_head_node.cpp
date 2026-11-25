@@ -9,6 +9,7 @@
 #include <control_msgs/msg/joint_trajectory_controller_state.hpp>
 
 #include <string>
+#include <algorithm>
 #include <cmath>
 
 class HeadController : public rclcpp::Node
@@ -106,15 +107,20 @@ private:
       const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
   {
 
-    // expected: positions.size() >= 2  (0:tilt, 1:pan)
-    if (msg->actual.positions.size() >= 2) {
-      current_tilt_ = static_cast<float>(msg->actual.positions[0]); // tilt
-      current_pan_ = static_cast<float>(msg->actual.positions[1]); // pan
+    const auto pan = std::find(msg->joint_names.begin(), msg->joint_names.end(), "head_pan_joint");
+    const auto tilt = std::find(msg->joint_names.begin(), msg->joint_names.end(), "head_tilt_joint");
+    if (pan == msg->joint_names.end() || tilt == msg->joint_names.end()) {return;}
+    const size_t pan_index = std::distance(msg->joint_names.begin(), pan);
+    const size_t tilt_index = std::distance(msg->joint_names.begin(), tilt);
+    if (pan_index >= msg->actual.positions.size() || tilt_index >= msg->actual.positions.size() ||
+      !std::isfinite(msg->actual.positions[pan_index]) || !std::isfinite(msg->actual.positions[tilt_index]))
+    {return;}
+    current_pan_ = static_cast<float>(msg->actual.positions[pan_index]);
+    current_tilt_ = static_cast<float>(msg->actual.positions[tilt_index]);
 
-      std_msgs::msg::Float64MultiArray arr;
-      arr.data = {current_pan_, current_tilt_};
-      pub_head_current_pose_->publish(arr);
-    }
+    std_msgs::msg::Float64MultiArray arr;
+    arr.data = {current_pan_, current_tilt_};
+    pub_head_current_pose_->publish(arr);
 
     if(!init_sent_once_){
       init_sent_once_ = true;
