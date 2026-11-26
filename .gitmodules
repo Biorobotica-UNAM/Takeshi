@@ -2,7 +2,7 @@
 [submodule "src/Interfaces"]
 	path = src/Interfaces
 	url = git@github.com:Biorobotica-UNAM/Interfaces.git
-	branch = integration
+	branch = enhace_navigation
 
 ###		Knowledge Bank    ####
 [submodule "src/Knowledge/knowledge_tools"]
@@ -22,7 +22,7 @@
 [submodule "src/Hardware/hardware_tools"]
 	path = src/Hardware/hardware_tools
 	url = git@github.com:Biorobotica-UNAM/hardware_tools.git
-	branch = integration
+	branch = feat/hardware_manager
 [submodule "src/Hardware/scanner"]
 	path = src/Hardware/scanner
 	url = git@github.com:Biorobotica-UNAM/scanner.git
@@ -40,11 +40,11 @@
 [submodule "src/Navigation/navigation_planner"]
 	path = src/Navigation/navigation_planner
 	url = git@github.com:Biorobotica-UNAM/navigation_planner.git
-	branch = integration
+	branch = rework/navigation_action
 [submodule "src/Navigation/navigation_controller"]
 	path = src/Navigation/navigation_controller
 	url = git@github.com:Biorobotica-UNAM/navigation_controller.git
-	branch = integration
+	branch = rework/navigation_action
 [submodule "src/Navigation/mapless_navigation"]
 	path = src/Navigation/mapless_navigation
 	url = git@github.com:Biorobotica-UNAM/mapless_navigation.git
@@ -72,7 +72,7 @@
 [submodule "src/HRI/human_detector"]
 	path = src/HRI/human_detector
 	url = git@github.com:Biorobotica-UNAM/human_detector.git
-	branch = integration
+	branch = feat/delete_bypass_sub
 [submodule "src/HRI/human_follower"]
 	path = src/HRI/human_follower
 	url = git@github.com:Biorobotica-UNAM/human_follower.git
