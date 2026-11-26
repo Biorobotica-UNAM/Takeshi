@@ -22,7 +22,7 @@
 [submodule "src/Hardware/hardware_tools"]
 	path = src/Hardware/hardware_tools
 	url = git@github.com:Biorobotica-UNAM/hardware_tools.git
-	branch = feat/hardware_manager
+	branch = integration
 [submodule "src/Hardware/scanner"]
 	path = src/Hardware/scanner
 	url = git@github.com:Biorobotica-UNAM/scanner.git
